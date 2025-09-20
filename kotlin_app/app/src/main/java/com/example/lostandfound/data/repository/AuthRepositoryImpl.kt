@@ -21,4 +21,17 @@ class AuthRepositoryImpl : AuthRepository {
         val domain = email.substringAfter('@', missingDelimiterValue = "")
         return domain.equals("uniandes.edu.co", ignoreCase = true)
     }
+
+    override suspend fun register(email: String, password: String, name: String, uniId: String): Result<Unit> =
+        runCatching {
+            delay(1000)
+            val e = email.trim()
+            require(e.isNotBlank()) { "Email vacío" }
+            require(isUniandesEmail(e)) { "El correo debe ser @uniandes.edu.co" }
+            require(password.length >= 8) { "Contraseña mínima 8" }
+            require(name.isNotBlank()) { "Nombre requerido" }
+            require(uniId.isNotBlank()) { "ID universitario requerido" }
+            Unit
+        }
+
 }
