@@ -11,16 +11,16 @@
     <!-- Paleta -->
     <color name="c_8CFFF7">#8CFFF7</color>
     <color name="c_6BE3D7">#6BE3D7</color>  <!-- fondo inputs -->
-    <color name="c_25A28B">#25A28B</color>  <!-- fondo pantalla / bordes -->
+    <color name="c_569398">#569398</color>  <!-- fondo pantalla / bordes -->
     <color name="c_FF953E">#FF953E</color>  <!-- botón (naranja claro) -->
     <color name="c_F75803">#F75803</color>  <!-- sombra/borde botón -->
     <color name="c_3C3472">#3C3472</color>  <!-- links -->
     <color name="c_6D64A9">#6D64A9</color>
 
     <!-- Alias semánticos -->
-    <color name="brand_bg">@color/c_25A28B</color>
+    <color name="brand_bg">@color/c_569398</color>
     <color name="brand_input_bg">@color/c_6BE3D7</color>
-    <color name="brand_input_stroke">@color/c_25A28B</color>
+    <color name="brand_input_stroke">@color/c_569398</color>
     <color name="brand_input_hint">#2B5A54</color>
 
     <color name="brand_button">@color/c_FF953E</color>
