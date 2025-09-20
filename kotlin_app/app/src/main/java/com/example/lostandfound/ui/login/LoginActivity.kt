@@ -12,6 +12,9 @@ import com.example.lostandfound.data.repository.AuthRepositoryImpl
 import com.example.lostandfound.databinding.ActivityLoginBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import android.content.Intent
+import com.example.lostandfound.ui.register.RegisterActivity
+
 
 class LoginActivity : AppCompatActivity() {
 
@@ -47,8 +50,9 @@ class LoginActivity : AppCompatActivity() {
 
         // Enlaces (aún sin pantallas)
         binding.txtRegister.setOnClickListener {
-            Toast.makeText(this, "Go to Register", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
+
         binding.txtForgot.setOnClickListener {
             Toast.makeText(this, "Go to Forgot Password", Toast.LENGTH_SHORT).show()
         }

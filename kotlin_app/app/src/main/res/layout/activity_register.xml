@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg"
+    android:padding="16dp">
+
+    <!-- Card container visual (simple con paddings y corners via background) -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/card"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:cardUseCompatPadding="true"
+        app:cardCornerRadius="18dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Welcome to UniFind!"
+                android:textStyle="bold"
+                android:textSize="22sp"
+                android:textColor="@android:color/black"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"/>
+
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Please fill in all the required fields."
+                android:textSize="14sp"
+                android:textColor="@android:color/black"
+                android:paddingBottom="12dp"/>
+
+            <!-- EMAIL -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/email"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:paddingTop="4dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilEmail"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="filled"
+                app:boxBackgroundColor="@color/brand_input_bg"
+                app:boxStrokeColor="@color/brand_input_stroke"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:endIconMode="clear_text">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Youremail@account.com"
+                    android:inputType="textEmailAddress"
+                    android:textColorHint="@color/brand_input_hint"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- PASSWORD -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/password"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:paddingTop="10dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilPass"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="filled"
+                app:boxBackgroundColor="@color/brand_input_bg"
+                app:boxStrokeColor="@color/brand_input_stroke"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:endIconMode="password_toggle">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPass"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Your password"
+                    android:inputType="textPassword"
+                    android:textColorHint="@color/brand_input_hint"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- NAME -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:paddingTop="10dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilName"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="filled"
+                app:boxBackgroundColor="@color/brand_input_bg"
+                app:boxStrokeColor="@color/brand_input_stroke"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="My Name"
+                    android:inputType="textPersonName"
+                    android:textColorHint="@color/brand_input_hint"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- UNI ID -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="University ID Number"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:paddingTop="10dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilUniId"
+                style="@style/Widget.Material3.TextInputLayout.FilledBox"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:boxBackgroundMode="filled"
+                app:boxBackgroundColor="@color/brand_input_bg"
+                app:boxStrokeColor="@color/brand_input_stroke"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etUniId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="My university code"
+                    android:inputType="text"
+                    android:textColorHint="@color/brand_input_hint"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCreate"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Create account"
+                android:textAllCaps="false"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/brand_button"
+                android:textColor="@color/brand_on_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                android:elevation="4dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"/>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progress"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/card"
+        app:layout_constraintEnd_toEndOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
