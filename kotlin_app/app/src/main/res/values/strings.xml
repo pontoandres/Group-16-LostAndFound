@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">LostAndFound</string>
+    <string name="cd_login_hero">Login illustration</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="your_password">Your password</string>
+    <string name="log_in">Log in</string>
+    <string name="not_registered">Are you not registered yet?</string>
+    <string name="forgot_password">Forgot your password?</string>
 </resources>
