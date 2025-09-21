@@ -6,4 +6,8 @@
         <item name="android:statusBarColor">@color/sys_status_bar</item>
         <item name="android:navigationBarColor">@color/sys_nav_bar</item>
     </style>
+    <style name="ToolbarButtonText" parent="TextAppearance.Material3.ActionBar.Title">
+        <item name="android:textColor">@color/brand_button</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

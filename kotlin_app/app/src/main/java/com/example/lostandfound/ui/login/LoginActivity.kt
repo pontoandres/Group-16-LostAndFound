@@ -73,8 +73,10 @@ class LoginActivity : AppCompatActivity() {
 
                 if (state.success) {
                     Toast.makeText(this@LoginActivity, "Login OK", Toast.LENGTH_SHORT).show()
-                    // TODO: startActivity(Intent(this@LoginActivity, HomeActivity::class.java))
-                    // finish()
+                    startActivity(
+                        Intent(this@LoginActivity, com.example.lostandfound.ui.home.HomeActivity::class.java)
+                    )
+                    finish() // cierra login para que no vuelva con back
                 }
             }
         }

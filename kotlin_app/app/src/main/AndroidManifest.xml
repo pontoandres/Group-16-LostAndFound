@@ -24,9 +24,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".ui.register.RegisterActivity"
             android:exported="false"/>
+
+        <activity
+            android:name=".ui.home.HomeActivity"
+            android:exported="false"
+            android:label="Goatfound" />
 
 
     </application>
