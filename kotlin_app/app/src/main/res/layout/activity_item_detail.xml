@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Top bar -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/brand_bg"
+            android:theme="@style/ThemeOverlay.Material3.ActionBar"
+            app:title="UniFind"
+            app:titleCentered="false"
+            app:titleTextColor="@android:color/black"
+            app:navigationIcon="@drawable/ic_arrow_back" />
+
+        <!-- Título del item -->
+        <TextView
+            android:id="@+id/txtItemName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Item name"
+            android:textStyle="bold"
+            android:textSize="24sp"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            android:paddingTop="8dp"
+            android:paddingBottom="4dp"/>
+
+        <!-- Posted by -->
+        <TextView
+            android:id="@+id/txtPostedBy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Posted by ..."
+            android:textColor="@android:color/black"
+            android:paddingBottom="8dp"/>
+
+        <!-- Imagen en una card estilo tile -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/c_569398"
+            app:cardBackgroundColor="@color/c_6BE3D7">
+
+            <ImageView
+                android:id="@+id/imgItem"
+                android:layout_width="match_parent"
+                android:layout_height="220dp"
+                android:scaleType="fitCenter"
+                android:contentDescription="@string/app_name"
+                android:padding="16dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Sección Descripción -->
+        <TextView
+            android:id="@+id/txtDescLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:paddingTop="12dp"
+            android:paddingBottom="4dp"/>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="@color/brand_button_stroke"
+            app:cardBackgroundColor="@color/brand_button">
+
+            <TextView
+                android:id="@+id/txtDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/brand_on_button"
+                android:padding="12dp"/>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Claim button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClaim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Claim Object"
+            android:textAllCaps="false"
+            android:textColor="@color/brand_on_button"
+            app:backgroundTint="@color/brand_button"
+            app:strokeColor="@color/brand_button_stroke"
+            app:strokeWidth="1dp"
+            app:cornerRadius="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_gravity="center"/>
+
+        <!-- Owner-only verification -->
+        <LinearLayout
+            android:id="@+id/ownerSection"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:visibility="gone">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Insert Verification Code"
+                app:boxBackgroundMode="filled"
+                app:boxBackgroundColor="@color/brand_input_bg"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusBottomEnd="12dp">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="text" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnVerify"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Verify"
+                android:textAllCaps="false"
+                android:textColor="@color/brand_on_button"
+                app:backgroundTint="@color/brand_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                app:cornerRadius="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_gravity="center"/>
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
