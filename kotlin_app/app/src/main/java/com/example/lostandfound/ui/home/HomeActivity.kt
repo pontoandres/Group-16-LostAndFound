@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.lostandfound.R
 import com.example.lostandfound.model.LostItem
 import com.google.android.material.textfield.TextInputEditText
+import android.content.Intent
+
 
 class HomeActivity : AppCompatActivity() {
 
@@ -22,8 +24,15 @@ class HomeActivity : AppCompatActivity() {
         val edt = findViewById<TextInputEditText>(R.id.edtSearch)
 
         adapter = LostItemAdapter { item ->
-            // TODO: Navegar a "vista de descripción" pasando item.id
-            // startActivity(Intent(this, ItemDetailActivity::class.java).putExtra("itemId", item.id))
+                val intent = Intent(this, com.example.lostandfound.ui.detail.ItemDetailActivity::class.java)
+                .putExtra("name", item.name)
+                .putExtra("description", item.description)
+                .putExtra("postedBy", item.postedBy)
+                .putExtra("imageRes", item.imageRes)
+                .putExtra("isOwner", true) // por ahora visible; cambia a true/false para probar
+
+            startActivity(intent)
+
         }
 
         rv.layoutManager = GridLayoutManager(this, 2)

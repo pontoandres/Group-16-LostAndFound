@@ -34,6 +34,12 @@
             android:exported="false"
             android:label="Goatfound" />
 
+        <activity
+            android:name=".ui.detail.ItemDetailActivity"
+            android:exported="false"
+            android:label="UniFind" />
+
+
 
     </application>
 
