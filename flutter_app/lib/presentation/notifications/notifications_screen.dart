@@ -18,7 +18,7 @@ class NotificationsScreen extends StatelessWidget {
     return Scaffold(
       appBar: const TopBar(
         title: 'Notifications',
-        actions: [DebugNavButton()], // 👈 aquí añadimos el menú
+        actions: [DebugNavButton()], 
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),

@@ -29,7 +29,7 @@ class HistoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: const TopBar(
         title: 'History',
-        actions: [DebugNavButton()], // 👈 aquí también
+        actions: [DebugNavButton()], 
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(16),

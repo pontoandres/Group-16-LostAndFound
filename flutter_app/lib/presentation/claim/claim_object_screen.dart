@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
-import '../widgets/debug_nav.dart'; // 👈 importa el menú popup
+import '../widgets/debug_nav.dart'; 
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
@@ -12,7 +12,7 @@ class ClaimObjectScreen extends StatelessWidget {
     return Scaffold(
       appBar: const TopBar(
         title: 'Claim Object',
-        actions: [DebugNavButton()], // 👈 aquí aparece el menú
+        actions: [DebugNavButton()], 
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
