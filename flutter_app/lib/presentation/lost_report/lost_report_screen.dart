@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
-import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
 
 class LostReportScreen extends StatefulWidget {
@@ -21,10 +20,10 @@ class _LostReportScreenState extends State<LostReportScreen> {
   final List<String> _categorias = ['Electronics', 'Books', 'Clothing', 'ID'];
   String? _catSeleccionada;
 
-  bool _pickingImage = false; // 👈 flag
+  bool _pickingImage = false; 
 
 Future<void> _pickImage() async {
-  if (_pickingImage) return;         // evita doble tap
+  if (_pickingImage) return;         
   _pickingImage = true;
   try {
     final x = await ImagePicker().pickImage(source: ImageSource.gallery);
