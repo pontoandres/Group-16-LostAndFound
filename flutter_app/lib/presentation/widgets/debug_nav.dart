@@ -10,10 +10,12 @@ class DebugNavButton extends StatelessWidget {
       icon: const Icon(Icons.bug_report),
       onSelected: (route) => Navigator.pushNamed(context, route),
       itemBuilder: (context) => const [
-        PopupMenuItem(value: AppRoutes.profile, child: Text('Go Profile')),
-        PopupMenuItem(value: AppRoutes.lostReport, child: Text('Go Lost Report')),
-        PopupMenuItem(value: AppRoutes.claim, child: Text('Go Claim')),
-        PopupMenuItem(value: AppRoutes.matchDetail, child: Text('Go Match Detail')),
+        PopupMenuItem(value: AppRoutes.profile,      child: Text('Go Profile')),
+        PopupMenuItem(value: AppRoutes.lostReport,   child: Text('Go Lost Report')),
+        PopupMenuItem(value: AppRoutes.claim,        child: Text('Go Claim')),
+        PopupMenuItem(value: AppRoutes.matchDetail,  child: Text('Go Match Detail')),
+        PopupMenuItem(value: AppRoutes.notifications,child: Text('Go Notifications')),
+        PopupMenuItem(value: AppRoutes.history,      child: Text('Go History')),
       ],
     );
   }
