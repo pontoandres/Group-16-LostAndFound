@@ -7,4 +7,12 @@
     <string name="log_in">Log in</string>
     <string name="not_registered">Are you not registered yet?</string>
     <string name="forgot_password">Forgot your password?</string>
+    <string name="back">Back</string>
+    <string name="home">Home</string>
+    <string name="report_lost_item">Report Lost Item</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="notifications">Notifications</string>
+    <string name="history">History</string>
+    <string name="settings">Settings</string>
 </resources>
