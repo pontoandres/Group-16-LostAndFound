@@ -16,6 +16,8 @@ class DebugNavButton extends StatelessWidget {
         PopupMenuItem(value: AppRoutes.matchDetail,  child: Text('Go Match Detail')),
         PopupMenuItem(value: AppRoutes.notifications,child: Text('Go Notifications')),
         PopupMenuItem(value: AppRoutes.history,      child: Text('Go History')),
+        PopupMenuItem(value: AppRoutes.camera,      child: Text('Go Camera')),
+        PopupMenuItem(value: AppRoutes.config,      child: Text('Go Config')),
       ],
     );
   }

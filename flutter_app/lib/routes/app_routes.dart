@@ -11,6 +11,10 @@ import '../presentation/claim/claim_object_screen.dart';
 import '../presentation/match_detail/item_description_screen.dart';
 import '../presentation/notifications/notifications_screen.dart';
 import '../presentation/history/history_screen.dart';
+import '../presentation/camera/camera_screen.dart';
+import '../presentation/config/config_screen.dart';
+
+
 class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
@@ -23,6 +27,9 @@ class AppRoutes {
   static const String matchDetail = '/match_detail';
   static const String notifications = '/notifications';
   static const String history = '/history';
+  static const String camera = '/camera';
+  static const String config = '/config';
+
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -34,8 +41,10 @@ class AppRoutes {
       lostReport: (_) => const LostReportScreen(),
       claim: (_) => const ClaimObjectScreen(),
       matchDetail: (_) => const ItemDescriptionScreen(),
-          notifications: (_) => const NotificationsScreen(),
-          history: (_) => const HistoryScreen()
+      notifications: (_) => const NotificationsScreen(),
+      history: (_) => const HistoryScreen(),
+      camera: (_) => const CameraScreen(),
+      config: (_) => const ConfigScreen(),
 
     };
   }
