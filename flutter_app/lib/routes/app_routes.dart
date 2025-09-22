@@ -21,7 +21,7 @@ class AppRoutes {
   static Map<String, WidgetBuilder> get routes {
     return {
       login: (context) => const LoginPage(),
-      //register: (context) => const RegisterPage(),
+      register: (context) => const RegisterPage(),
       forgot_password: (context) => const ForgotPasswordPage(),
       
       //feed: (context) => const FeedPage(),
