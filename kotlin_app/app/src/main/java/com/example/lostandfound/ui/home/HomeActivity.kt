@@ -10,15 +10,18 @@ import com.example.lostandfound.R
 import com.example.lostandfound.model.LostItem
 import com.google.android.material.textfield.TextInputEditText
 import android.content.Intent
+import com.example.lostandfound.ui.common.BaseActivity
 
 
-class HomeActivity : AppCompatActivity() {
+class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
+
+        setupToolbar()
 
         val rv = findViewById<RecyclerView>(R.id.rvItems)
         val edt = findViewById<TextInputEditText>(R.id.edtSearch)
@@ -109,6 +112,7 @@ class HomeActivity : AppCompatActivity() {
 
         val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
         // Si por timing el menú aún no está listo, lo posteamos al loop:
+        /*
         toolbar.post {
             val reportItem = toolbar.menu.findItem(R.id.action_report)
             val reportBtn = reportItem.actionView
@@ -119,6 +123,7 @@ class HomeActivity : AppCompatActivity() {
                 // startActivity(Intent(this, ReportActivity::class.java))
             }
         }
+        */
 
 
 
