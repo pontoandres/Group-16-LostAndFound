@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/presentation/camera/camera_screen.dart';
-import 'package:flutter_app/presentation/config/config_screen.dart';
 
 
 import '../presentation/login/login_page.dart';
@@ -46,7 +44,7 @@ class AppRoutes {
       notifications: (_) => const NotificationsScreen(),
       history: (_) => const HistoryScreen(),
       camera: (_) => const CameraScreen(),
-      config: (_) => const ConfigScreen()
+      config: (_) => const ConfigScreen(),
 
     };
   }
