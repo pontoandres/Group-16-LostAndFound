@@ -4,11 +4,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'routes/app_routes.dart';   // Mapa de rutas
 import 'theme/app_theme.dart';     // Tema visual
 
-/// === Flags de configuración ===
-/// Pon en false si quieres correr solo el front (sin backend)
 const bool kUseBackend = true;
 
-/// Pantalla inicial: true => Login, false => Profile (cámbialo a lo que necesites)
 const bool kStartAtLogin = true;
 
 Future<void> main() async {
@@ -34,9 +31,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Lost & Found Tracker',
       theme: AppTheme.theme,
-      // Elegimos la ruta inicial según el flag
       initialRoute: kStartAtLogin ? AppRoutes.login : AppRoutes.profile,
-      // Todas las rutas centralizadas en AppRoutes
       routes: AppRoutes.routes,
     );
   }

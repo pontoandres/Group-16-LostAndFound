@@ -15,7 +15,7 @@ class ForgotPasswordPage extends StatelessWidget {
 }
 
 class _ForgotPasswordForm extends StatelessWidget {
-  const _ForgotPasswordForm({super.key});
+  const _ForgotPasswordForm();
 
   @override
   Widget build(BuildContext context) {

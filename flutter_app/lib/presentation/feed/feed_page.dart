@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/feed_viewmodel/feed_viewmodel.dart';
 
-/// Main feed screen that displays a grid of lost items reported by users.
-/// Currently, items are retrieved from the local viewmodel (not yet connected to Supabase).
-/// Future integration will dynamically fetch data from the backend.
+
 class FeedPage extends StatelessWidget {
   final FeedViewModel viewModel = FeedViewModel();
 
@@ -11,7 +9,6 @@ class FeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Retrieve list of lost items 
     final items = viewModel.getLostItems();
 
     return Scaffold(
@@ -28,12 +25,10 @@ class FeedPage extends StatelessWidget {
           ),
         ),
         actions: [
-          // Action button to allow users to report a lost item
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: ElevatedButton(
               onPressed: () {
-                // Navigate to lost item report screen
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE49957),
@@ -56,7 +51,6 @@ class FeedPage extends StatelessWidget {
         ],
       ),
 
-      // Page body with search input and item list
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -81,7 +75,6 @@ class FeedPage extends StatelessWidget {
             ),
             const SizedBox(height: 12),
 
-            // Search bar (non-functional for now)
             TextField(
               decoration: InputDecoration(
                 hintText: "What did you lose?",
@@ -97,7 +90,6 @@ class FeedPage extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // Display either a message or the grid of items
             Expanded(
               child: items.isEmpty
                   ? const Center(
@@ -119,7 +111,6 @@ class FeedPage extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              // Placeholder image
                               Image.asset(
                                 item.imagePath,
                                 height: 70,
