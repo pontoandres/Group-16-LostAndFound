@@ -36,7 +36,7 @@ class ItemDescriptionScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: imagePath != null
                     ? Image.file(File(imagePath), fit: BoxFit.cover)
-                    : Image.asset('assets/images/Rectangle 17.png', fit: BoxFit.cover),
+                    : Image.asset('assets/images/Rectangle17.png', fit: BoxFit.cover),
               ),
             ),
 
