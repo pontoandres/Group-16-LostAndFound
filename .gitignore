@@ -7,3 +7,7 @@ captures/
 .externalNativeBuild/
 .cxx/
 **/build/
+# VS code settings
+.vscode/
+# macOS system files
+.DS_Store
