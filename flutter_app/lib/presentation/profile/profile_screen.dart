@@ -17,10 +17,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   File? _photo;
 
-bool _pickingPhoto = false; // 👈 flag arriba, a nivel de estado
+bool _pickingPhoto = false;
 
 Future<void> _pickPhoto() async {
-  if (_pickingPhoto) return;         // evita doble tap
+  if (_pickingPhoto) return;         
   _pickingPhoto = true;
   try {
     final x = await ImagePicker().pickImage(source: ImageSource.gallery);

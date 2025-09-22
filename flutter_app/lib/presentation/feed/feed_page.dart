@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../viewmodels/feed_viewmodel/feed_viewmodel.dart';
 
-
 class FeedPage extends StatelessWidget {
   final FeedViewModel viewModel = FeedViewModel();
 
@@ -16,6 +15,7 @@ class FeedPage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: const Color(0xFF4E919D),
         elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF2D3A3A)),
         title: const Text(
           "Goatfound",
           style: TextStyle(
@@ -25,38 +25,59 @@ class FeedPage extends StatelessWidget {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12.0),
-            child: ElevatedButton(
-              onPressed: () {
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE49957),
-                foregroundColor: const Color(0xFF2D3A3A),
-                textStyle: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(
-                    color: Color(0xFF714E1E),
-                    width: 2,
-                  ),
-                ),
-              ),
-              child: const Text("Report a lost item"),
-            ),
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color(0xFF2D3A3A)),
+            onPressed: () {
+              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+            },
           ),
         ],
       ),
-
+      drawer: Drawer(
+        backgroundColor: const Color(0xFFB6D2D2),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(
+                color: Color(0xFF4E919D),
+              ),
+              child: Text(
+                'Menu',
+                style: TextStyle(
+                  color: Color(0xFF2D3A3A),
+                  fontSize: 24,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notifications'),
+              onTap: () => Navigator.pushNamed(context, '/notifications'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.history),
+              title: const Text('History'),
+              onTap: () => Navigator.pushNamed(context, '/history'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text('Settings'),
+              onTap: () => Navigator.pushNamed(context, '/settings'),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Profile'),
+              onTap: () => Navigator.pushNamed(context, '/profile'),
+            ),
+          ],
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header text
             const Text(
               "Lost Something?",
               style: TextStyle(
@@ -74,7 +95,6 @@ class FeedPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-
             TextField(
               decoration: InputDecoration(
                 hintText: "What did you lose?",
@@ -89,7 +109,6 @@ class FeedPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-
             Expanded(
               child: items.isEmpty
                   ? const Center(
@@ -129,9 +148,36 @@ class FeedPage extends StatelessWidget {
                       }).toList(),
                     ),
             ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/lost_report');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFE49957),
+                  foregroundColor: const Color(0xFF2D3A3A),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    side: const BorderSide(
+                      color: Color(0xFF714E1E),
+                      width: 2,
+                    ),
+                  ),
+                ),
+                child: const Text("Report a lost item"),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
