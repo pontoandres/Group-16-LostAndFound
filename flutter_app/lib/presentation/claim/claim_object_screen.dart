@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
+import '../widgets/debug_nav.dart'; 
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
@@ -9,7 +10,10 @@ class ClaimObjectScreen extends StatelessWidget {
     final msg = TextEditingController(text: 'Hola este es mi objeto');
 
     return Scaffold(
-      appBar: const TopBar(title: 'Claim Object'),
+      appBar: const TopBar(
+        title: 'Claim Object',
+        actions: [DebugNavButton()], 
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -23,7 +27,10 @@ class ClaimObjectScreen extends StatelessWidget {
               decoration: const InputDecoration(),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: () {}, child: const Text('Send + Generate Code')),
+            ElevatedButton(
+              onPressed: () {},
+              child: const Text('Send + Generate Code'),
+            ),
           ],
         ),
       ),
