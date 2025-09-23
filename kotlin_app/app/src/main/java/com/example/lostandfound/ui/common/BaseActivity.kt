@@ -1,10 +1,14 @@
 package com.example.lostandfound.ui.common
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.lostandfound.R
+import com.example.lostandfound.ui.home.HomeActivity
+import com.example.lostandfound.ui.profile.ProfileActivity
+import com.example.lostandfound.ui.report.ReportLostItemActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 
@@ -44,11 +48,22 @@ abstract class BaseActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.nav_home -> {
-                    // TODO: start HomeActivity
+                    if (this !is HomeActivity) {
+                        startActivity(Intent(this, HomeActivity::class.java))
+                        finish()
+                    }
                     true
                 }
                 R.id.nav_report -> {
-                    // TODO: start ReportActivity
+                    if (this !is ReportLostItemActivity) {
+                        startActivity(Intent(this, ReportLostItemActivity::class.java))
+                    }
+                    true
+                }
+                R.id.nav_profile -> {
+                    if (this !is ProfileActivity) {
+                        startActivity(Intent(this, ProfileActivity::class.java))
+                    }
                     true
                 }
                 R.id.nav_notifications -> {

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import android.content.Intent
 import com.example.lostandfound.ui.register.RegisterActivity
+import com.example.lostandfound.ui.forgotpassword.ForgotPasswordActivity
 
 
 class LoginActivity : AppCompatActivity() {
@@ -54,7 +55,7 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.txtForgot.setOnClickListener {
-            Toast.makeText(this, "Go to Forgot Password", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, ForgotPasswordActivity::class.java))
         }
 
         // Observar estado
