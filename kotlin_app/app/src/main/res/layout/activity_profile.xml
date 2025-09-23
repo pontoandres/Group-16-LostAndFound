@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- TOP BAR -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/brand_bg"
+            android:theme="@style/ThemeOverlay.Material3.ActionBar"
+            app:title="Profile"
+            app:titleCentered="true"
+            app:titleTextColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Back Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBack"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/back"
+            android:textAllCaps="false"
+            app:cornerRadius="16dp"
+            app:backgroundTint="@color/brand_button"
+            android:textColor="@color/brand_on_button"
+            app:strokeColor="@color/brand_button_stroke"
+            app:strokeWidth="1dp"
+            android:elevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/topAppBar"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Profile Title -->
+        <TextView
+            android:id="@+id/txtProfileTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="User Profile"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/btnBack"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="32dp"/>
+
+        <!-- Profile Picture -->
+        <ImageView
+            android:id="@+id/imgProfile"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="24dp"
+            android:src="@android:drawable/ic_menu_myplaces"
+            android:background="@color/brand_input_bg"
+            android:scaleType="centerCrop"
+            android:padding="20dp"
+            app:layout_constraintTop_toBottomOf="@id/txtProfileTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Name Label -->
+        <TextView
+            android:id="@+id/txtNameLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Full Name"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/imgProfile"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp"/>
+
+        <!-- Name Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilName"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/brand_input_bg"
+            app:boxStrokeColor="@color/brand_input_stroke"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:endIconMode="clear_text"
+            app:layout_constraintTop_toBottomOf="@id/txtNameLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPersonName"
+                android:textColorHint="@color/brand_input_hint"
+                android:hint="Enter your full name" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Email Label -->
+        <TextView
+            android:id="@+id/txtEmailLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/email"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/tilName"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Email Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/brand_input_bg"
+            app:boxStrokeColor="@color/brand_input_stroke"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:endIconMode="clear_text"
+            app:layout_constraintTop_toBottomOf="@id/txtEmailLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:textColorHint="@color/brand_input_hint"
+                android:hint="Enter your email" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Published Items Info -->
+        <TextView
+            android:id="@+id/txtPublishedItems"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="0 items published"
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:background="@color/brand_input_bg"
+            android:padding="16dp"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/tilEmail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:id="@+id/bottomButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/txtPublishedItems"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnBackProfile"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="@string/back"
+                android:textAllCaps="false"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/brand_button"
+                android:textColor="@color/brand_on_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                android:elevation="4dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Save"
+                android:textAllCaps="false"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/brand_button"
+                android:textColor="@color/brand_on_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                android:elevation="4dp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

@@ -19,6 +19,11 @@
         android:icon="@drawable/ic_history"/>
 
     <item
+        android:id="@+id/nav_profile"
+        android:title="Profile"
+        android:icon="@drawable/ic_settings"/>
+
+    <item
         android:id="@+id/nav_settings"
         android:title="@string/settings"
         android:icon="@drawable/ic_settings"/>

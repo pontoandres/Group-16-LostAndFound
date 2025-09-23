@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- TOP BAR -->
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/topAppBar"
+            android:layout_width="0dp"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/brand_bg"
+            android:theme="@style/ThemeOverlay.Material3.ActionBar"
+            app:title="Report Lost Item"
+            app:titleCentered="true"
+            app:titleTextColor="@android:color/black"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Title Input Field -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTitle"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/brand_input_bg"
+            app:boxStrokeColor="@color/brand_input_stroke"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:endIconMode="clear_text"
+            app:layout_constraintTop_toBottomOf="@id/topAppBar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:textColorHint="@color/brand_input_hint"
+                android:hint="Item Title" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Informational Text -->
+        <TextView
+            android:id="@+id/txtInfo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Please provide a clear description of the lost item and upload a photo if possible."
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:layout_marginHorizontal="16dp"
+            app:layout_constraintTop_toBottomOf="@id/tilTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Image upload card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardImageUpload"
+            android:layout_width="0dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintTop_toBottomOf="@id/txtInfo"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/brand_input_bg">
+
+                <!-- Image placeholder -->
+                <ImageView
+                    android:id="@+id/imgPlaceholder"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:background="@color/brand_input_stroke"
+                    android:padding="20dp"
+                    android:scaleType="centerInside"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <!-- Upload button -->
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/btnUpload"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:src="@android:drawable/ic_menu_camera"
+                    app:backgroundTint="@color/brand_button"
+                    app:tint="@android:color/white"
+                    app:fabSize="mini"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Description Label -->
+        <TextView
+            android:id="@+id/txtDescriptionLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/cardImageUpload"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Description Text Area -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDescription"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/brand_input_bg"
+            app:boxStrokeColor="@color/brand_input_stroke"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:layout_constraintTop_toBottomOf="@id/txtDescriptionLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:lines="3"
+                android:textColorHint="@color/brand_input_hint"
+                android:hint="Describe the lost item..." />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Details Label -->
+        <TextView
+            android:id="@+id/txtDetailsLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Additional Details"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/tilDescription"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Details Text Area -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDetails"
+            style="@style/Widget.Material3.TextInputLayout.FilledBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="filled"
+            app:boxBackgroundColor="@color/brand_input_bg"
+            app:boxStrokeColor="@color/brand_input_stroke"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:layout_constraintTop_toBottomOf="@id/txtDetailsLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDetails"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:lines="3"
+                android:textColorHint="@color/brand_input_hint"
+                android:hint="Additional details (location, time, etc.)..." />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Bottom Buttons -->
+        <LinearLayout
+            android:id="@+id/bottomButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/tilDetails"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExit"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Exit"
+                android:textAllCaps="false"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/brand_button"
+                android:textColor="@color/brand_on_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                android:elevation="4dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSave"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Save"
+                android:textAllCaps="false"
+                app:cornerRadius="16dp"
+                app:backgroundTint="@color/brand_button"
+                android:textColor="@color/brand_on_button"
+                app:strokeColor="@color/brand_button_stroke"
+                app:strokeWidth="1dp"
+                android:elevation="4dp" />
+
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>
