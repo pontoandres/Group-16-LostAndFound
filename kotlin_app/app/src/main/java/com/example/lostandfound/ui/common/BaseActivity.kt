@@ -6,9 +6,12 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
 import com.example.lostandfound.R
+import com.example.lostandfound.ui.history.HistoryActivity
 import com.example.lostandfound.ui.home.HomeActivity
+import com.example.lostandfound.ui.notifications.NotificationsActivity
 import com.example.lostandfound.ui.profile.ProfileActivity
 import com.example.lostandfound.ui.report.ReportLostItemActivity
+import com.example.lostandfound.ui.settings.SettingsActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
 
@@ -67,15 +70,21 @@ abstract class BaseActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_notifications -> {
-                    // TODO: start NotificationsActivity
+                    if (this !is NotificationsActivity) {
+                        startActivity(Intent(this, NotificationsActivity::class.java))
+                    }
                     true
                 }
                 R.id.nav_history -> {
-                    // TODO: start HistoryActivity
+                    if (this !is HistoryActivity) {
+                        startActivity(Intent(this, HistoryActivity::class.java))
+                    }
                     true
                 }
                 R.id.nav_settings -> {
-                    // TODO: start SettingsActivity
+                    if (this !is SettingsActivity) {
+                        startActivity(Intent(this, SettingsActivity::class.java))
+                    }
                     true
                 }
                 else -> false

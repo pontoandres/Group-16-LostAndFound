@@ -52,14 +52,28 @@
         <activity
             android:name=".ui.home.HomeActivity"
             android:exported="false"
-            android:label="Goatfound" />
+            android:label="UniFind" />
 
         <activity
             android:name=".ui.detail.ItemDetailActivity"
             android:exported="false"
             android:label="UniFind" />
 
+        <activity
+            android:name=".ui.claimobject.ClaimObjectActivity"
+            android:exported="false" />
 
+        <activity
+            android:name=".ui.notifications.NotificationsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.history.HistoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false" />
 
     </application>
 

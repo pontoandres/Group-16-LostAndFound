@@ -1,5 +1,6 @@
     package com.example.lostandfound.ui.detail
 
+    import android.content.Intent
     import android.os.Bundle
     import androidx.appcompat.app.AppCompatActivity
     import com.example.lostandfound.R
@@ -7,6 +8,7 @@
     import android.widget.ImageView
     import android.widget.LinearLayout
     import android.widget.TextView
+    import com.example.lostandfound.ui.claimobject.ClaimObjectActivity
     import com.google.android.material.textfield.TextInputEditText
 
     class ItemDetailActivity : AppCompatActivity() {
@@ -35,7 +37,13 @@
             // Claim
             findViewById<com.google.android.material.button.MaterialButton>(R.id.btnClaim)
                 .setOnClickListener {
-                    // TODO: flujo de claim (prototipo: mostrar toast o navegar)
+                    val intent = Intent(this, ClaimObjectActivity::class.java).apply {
+                        putExtra("name", name)
+                        putExtra("description", desc)
+                        putExtra("postedBy", postedBy)
+                        putExtra("imageRes", imageRes)
+                    }
+                    startActivity(intent)
                 }
 
             // Owner-only section
