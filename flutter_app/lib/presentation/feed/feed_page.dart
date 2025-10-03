@@ -1,183 +1,106 @@
 import 'package:flutter/material.dart';
-import '../../viewmodels/feed_viewmodel/feed_viewmodel.dart';
+import 'package:provider/provider.dart';
 
-class FeedPage extends StatelessWidget {
-  final FeedViewModel viewModel = FeedViewModel();
+import '../../viewmodels/feed/feed_viewmodel.dart';
 
-  FeedPage({super.key});
+class FeedPage extends StatefulWidget {
+  const FeedPage({super.key});
+
+  @override
+  State<FeedPage> createState() => _FeedPageState();
+}
+
+class _FeedPageState extends State<FeedPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Cargar y suscribirse cuando el provider esté creado
+    // Usamos addPostFrame para tener contexto válido
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final vm = context.read<FeedViewModel>();
+      vm.load();
+      vm.subscribeRealtime(); // puedes quitarlo si no quieres realtime
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final items = viewModel.getLostItems();
+    return ChangeNotifierProvider(
+      create: (_) => FeedViewModel(),
+      child: const _FeedBody(),
+    );
+  }
+}
+
+class _FeedBody extends StatelessWidget {
+  const _FeedBody();
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<FeedViewModel>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFB6D2D2),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFF4E919D),
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF2D3A3A)),
-        title: const Text(
-          "Goatfound",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-            color: Color(0xFF2D3A3A),
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout, color: Color(0xFF2D3A3A)),
-            onPressed: () {
-              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-            },
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        backgroundColor: const Color(0xFFB6D2D2),
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(
-                color: Color(0xFF4E919D),
-              ),
-              child: Text(
-                'Menu',
-                style: TextStyle(
-                  color: Color(0xFF2D3A3A),
-                  fontSize: 24,
-                ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.notifications),
-              title: const Text('Notifications'),
-              onTap: () => Navigator.pushNamed(context, '/notifications'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('History'),
-              onTap: () => Navigator.pushNamed(context, '/history'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () => Navigator.pushNamed(context, '/settings'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.person),
-              title: const Text('Profile'),
-              onTap: () => Navigator.pushNamed(context, '/profile'),
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Lost Something?",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3A3A),
-              ),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              "Search for your item below or report a lost item",
-              style: TextStyle(
-                fontSize: 14,
-                color: Color(0xFF2D3A3A),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              decoration: InputDecoration(
-                hintText: "What did you lose?",
-                prefixIcon: const Icon(Icons.search),
-                filled: true,
-                fillColor: const Color(0xFF6DAEAE),
-                hintStyle: const TextStyle(color: Color(0xFF2D3A3A)),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: items.isEmpty
-                  ? const Center(
-                      child: Text(
-                        "No lost items reported yet.",
-                        style: TextStyle(color: Color(0xFF2D3A3A)),
+      appBar: AppBar(title: const Text('Goatfound')),
+      body: RefreshIndicator(
+        onRefresh: () => context.read<FeedViewModel>().load(),
+        child: Builder(
+          builder: (_) {
+            if (vm.isLoading && vm.items.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (vm.error != null && vm.items.isEmpty) {
+              return Center(child: Text('Error: ${vm.error}'));
+            }
+            if (vm.items.isEmpty) {
+              return const Center(child: Text('No lost items reported yet.'));
+            }
+            return ListView.separated(
+              padding: const EdgeInsets.all(12),
+              itemCount: vm.items.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (_, i) {
+                final it = vm.items[i];
+                return Card(
+                  child: ListTile(
+            leading: it.imageUrl != null
+            ? ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                    child: Image.network(
+                  it.imageUrl!,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.cover,
                       ),
                     )
-                  : GridView.count(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      children: items.map((item) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF6DAEAE),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                item.imagePath,
-                                height: 70,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                item.name,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2D3A3A),
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      }).toList(),
-                    ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/lost_report');
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFE49957),
-                  foregroundColor: const Color(0xFF2D3A3A),
-                  textStyle: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                      : const Icon(Icons.search),
+
+                    title: Text(it.title),
+                    subtitle: Text([
+                      if (it.location != null && it.location!.isNotEmpty) '📍 ${it.location}',
+                      if (it.category != null && it.category!.isNotEmpty) '🏷️ ${it.category}',
+                      '🕒 ${it.createdAt.toLocal()}',
+                    ].where((e) => e.isNotEmpty).join(' · ')),
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(
-                      color: Color(0xFF714E1E),
-                      width: 2,
-                    ),
-                  ),
-                ),
-                child: const Text("Report a lost item"),
-              ),
+                );
+              },
+            );
+          },
+        ),
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: SizedBox(
+            height: 52,
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pushNamed(context, '/lost_report')
+                  .then((_) => context.read<FeedViewModel>().load()),
+              child: const Text('Report a lost item'),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
