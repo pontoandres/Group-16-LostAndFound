@@ -52,4 +52,14 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <!-- Cámara (opcional si tomas foto) -->
+<uses-permission android:name="android.permission.CAMERA" />
+
+<!-- Lectura de imágenes (Android 13+) -->
+<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+
+<!-- Compatibilidad <= Android 12 -->
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+    android:maxSdkVersion="32" />
+
 </manifest>
