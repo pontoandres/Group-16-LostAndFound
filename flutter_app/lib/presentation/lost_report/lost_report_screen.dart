@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/lost_report/lost_report_viewmodel.dart';
+import 'package:image_picker/image_picker.dart';
 
 class LostReportScreen extends StatelessWidget {
   const LostReportScreen({super.key});
@@ -25,7 +26,6 @@ Widget build(BuildContext context) {
   return Scaffold(
     appBar: AppBar(title: const Text('Report a lost item')),
     body: SafeArea(
-      // ✅ ListView da constraints y evita el “not laid out”
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -40,12 +40,36 @@ Widget build(BuildContext context) {
                 fit: BoxFit.cover,
               ),
             )
-          else
-            OutlinedButton.icon(
-              onPressed: () => vm.pickImage(),
-              icon: const Icon(Icons.photo),
-              label: const Text('Choose image'),
-            ),
+         else
+  OutlinedButton.icon(
+    onPressed: () async {
+      final option = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (_) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt),
+                title: const Text('Take a photo'),
+                onTap: () => Navigator.pop(context, ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo),
+                title: const Text('Choose from gallery'),
+                onTap: () => Navigator.pop(context, ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (option != null) {
+        await vm.pickImage(source: option);
+      }
+    },
+    icon: const Icon(Icons.add_a_photo),
+    label: const Text('Add Image'),
+  ),
+
           const SizedBox(height: 16),
 
           TextField(

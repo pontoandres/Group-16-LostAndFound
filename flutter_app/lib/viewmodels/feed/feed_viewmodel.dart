@@ -28,7 +28,7 @@ class FeedViewModel extends ChangeNotifier {
     }
   }
 
-  /// Actualizaciones en tiempo real (inserciones en lost_items)
+  /// Actualizaciones en tiempo real
   void subscribeRealtime() {
     _channel?.unsubscribe();
     _channel = _service.subscribe((newItem) {
