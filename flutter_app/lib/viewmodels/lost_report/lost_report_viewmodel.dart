@@ -24,23 +24,15 @@ class LostReportViewModel extends ChangeNotifier {
   // -----------------------------------------------
   // Seleccionar imagen (galería o cámara)
   // -----------------------------------------------
-  Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
-    try {
-      final picker = ImagePicker();
-      final XFile? file = await picker.pickImage(
-        source: source,
-        imageQuality: 85,
-        maxWidth: 1600,
-      );
-      if (file == null) return;
-
-      imageBytes = await file.readAsBytes();
-      notifyListeners();
-    } catch (e) {
-      error = 'No se pudo seleccionar la imagen';
-      notifyListeners();
-    }
+Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
+  final picker = ImagePicker();
+  final XFile? picked = await picker.pickImage(source: source, maxWidth: 1024);
+  if (picked != null) {
+    imageBytes = await picked.readAsBytes();
+    notifyListeners();
   }
+}
+
 
   // -----------------------------------------------
   // Subir imagen al Storage y devolver URL pública
