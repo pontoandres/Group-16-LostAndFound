@@ -14,10 +14,16 @@ class RegisterViewModel extends ChangeNotifier {
   String? errorMessage;
 
   Future<bool> register() async {
-    final email = emailController.text;
-    final password = passwordController.text;
-    final name = nameController.text;
-    final uniId = uniIdController.text;
+    final email = emailController.text.trim();
+    final password = passwordController.text.trim();
+    final name = nameController.text.trim();
+    final uniId = uniIdController.text.trim();
+
+    print('Iniciando registro...');
+    print('Email: $email');
+    print('Password: $password');
+    print('Name: $name');
+    print('University ID: $uniId');
 
     try {
       isLoading = true;
@@ -31,16 +37,20 @@ class RegisterViewModel extends ChangeNotifier {
         uniId,
       );
 
-      return response.user != null;
+      print('Registro completado con éxito. User ID: ${response.user?.id}');
+      return true;
     } on AuthException catch (e) {
       errorMessage = e.message;
+      print('Error de autenticación: ${e.message}');
       return false;
-    } catch (_) {
-      errorMessage = 'Unexpected error during registration';
+    } catch (e) {
+      errorMessage = e.toString();
+      print('Error inesperado: $e');
       return false;
     } finally {
       isLoading = false;
       notifyListeners();
+      print('Registro finalizado.');
     }
   }
 
@@ -53,3 +63,4 @@ class RegisterViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
+
