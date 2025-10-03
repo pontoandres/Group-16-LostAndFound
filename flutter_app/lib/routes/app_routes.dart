@@ -13,6 +13,7 @@ import '../presentation/notifications/notifications_screen.dart';
 import '../presentation/history/history_screen.dart';
 import '../presentation/camera/camera_screen.dart';
 import '../presentation/config/config_screen.dart';
+import '../presentation/reset_password/reset_password_page.dart';
 
 
 class AppRoutes {
@@ -29,6 +30,8 @@ class AppRoutes {
   static const String history = '/history';
   static const String camera = '/camera';
   static const String config = '/config';
+  static const String resetPassword = '/reset_password';
+
 
 
   static Map<String, WidgetBuilder> get routes {
@@ -45,7 +48,8 @@ class AppRoutes {
       history: (_) => const HistoryScreen(),
       camera: (_) => const CameraScreen(),
       config: (_) => const ConfigScreen(),
-
+      resetPassword: (_) => const ResetPasswordPage(),   
+   
     };
   }
 }
