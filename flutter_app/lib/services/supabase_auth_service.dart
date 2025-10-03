@@ -16,13 +16,15 @@ class SupabaseAuthService {
         password: password,
       );
     } on AuthException catch (e) {
+      print('AuthException al iniciar sesión: ${e.message}');
       throw AuthException(e.message);
     } catch (e) {
+      print('Error inesperado al iniciar sesión: $e');
       throw Exception('Error inesperado al iniciar sesión');
     }
   }
 
-  /// Registra un nuevo usuario
+  /// Registra un nuevo usuario (crea Auth + crea/actualiza perfil)
   Future<AuthResponse> signUpWithEmailAndPassword(
       String email, String password, String name, String uniId) async {
     final trimmedEmail = email.trim();
@@ -35,22 +37,38 @@ class SupabaseAuthService {
     }
 
     try {
-      return await _client.auth.signUp(
+      // Crear usuario en Auth
+      final response = await _client.auth.signUp(
         email: trimmedEmail,
         password: password,
-        data: {
-          'name': name,
-          'university_id': uniId,
-        },
       );
+
+      final userId = response.user?.id;
+      if (userId == null) {
+        throw AuthException('No se pudo crear el usuario');
+      }
+
+      print('Usuario creado en Auth: $userId');
+
+      // Insertar/actualizar perfil (ya no usamos .error)
+      final responseUpsert = await _client.from('profiles').upsert({
+        'id': userId,
+        'name': name,
+        'university_id': uniId,
+      }).select(); // select() devuelve los datos insertados/actualizados
+
+      print('Resultado upsert profiles: $responseUpsert');
+
+      return response;
     } on AuthException catch (e) {
+      print('AuthException en signUpWithEmailAndPassword: ${e.message}');
       throw AuthException(e.message);
     } catch (e) {
-      throw Exception('Error inesperado al registrarse');
+      print('Error inesperado en signUpWithEmailAndPassword: $e');
+      throw Exception('Error al registrarse: $e');
     }
   }
 
-  /// Recuperar contraseña (envía email con enlace)
   Future<void> resetPassword(String email) async {
     final trimmedEmail = email.trim();
     if (!trimmedEmail.endsWith('@uniandes.edu.co')) {
@@ -60,19 +78,20 @@ class SupabaseAuthService {
     try {
       await _client.auth.resetPasswordForEmail(trimmedEmail);
     } on AuthException catch (e) {
+      print('AuthException en resetPassword: ${e.message}');
       throw AuthException(e.message);
     } catch (e) {
+      print('Error inesperado en resetPassword: $e');
       throw Exception('Error inesperado al solicitar recuperación');
     }
   }
 
-  /// Cierra sesión
   Future<void> signOut() async {
     await _client.auth.signOut();
   }
 
-  /// Obtiene el usuario actual
   User? getCurrentUser() {
     return _client.auth.currentUser;
   }
 }
+

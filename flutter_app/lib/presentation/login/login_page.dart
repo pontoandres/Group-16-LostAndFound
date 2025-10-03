@@ -29,7 +29,6 @@ class _LoginForm extends StatelessWidget {
           children: [
             const SizedBox(height: 40),
 
-        
             Image.asset('assets/images/login.png', height: 280),
 
             const SizedBox(height: 20),
@@ -37,7 +36,8 @@ class _LoginForm extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 "Email",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             const SizedBox(height: 5),
@@ -61,7 +61,8 @@ class _LoginForm extends StatelessWidget {
               alignment: Alignment.centerLeft,
               child: Text(
                 "Password",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             const SizedBox(height: 5),
@@ -93,23 +94,24 @@ class _LoginForm extends StatelessWidget {
                   textStyle: const TextStyle(fontSize: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Color(0xFF714E1E), width: 2),
+                    side: const BorderSide(
+                        color: Color(0xFF714E1E), width: 2),
                   ),
                 ),
                 onPressed: viewModel.isLoading
                     ? null
                     : () async {
-                        
-                        if (!viewModel.emailController.text.endsWith('@uniandes.edu.co')) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Solo se permiten correos @uniandes.edu.co"),
-                            ),
-                          );
-                        }
+                        print("Botón Login presionado");
+                        final success = await viewModel.login();
 
-                        if (context.mounted) {
-                          Navigator.pushNamed(context, '/feed'); 
+                        if (success && context.mounted) {
+                          Navigator.pushReplacementNamed(context, '/feed');
+                        } else if (viewModel.errorMessage != null &&
+                            context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(viewModel.errorMessage!)),
+                          );
                         }
                       },
                 child: viewModel.isLoading
@@ -120,14 +122,16 @@ class _LoginForm extends StatelessWidget {
 
             const SizedBox(height: 20),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/register'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/register'),
               child: const Text(
                 "Are you not registered yet?",
                 style: TextStyle(color: Colors.black),
               ),
             ),
             TextButton(
-              onPressed: () => Navigator.pushNamed(context, '/forgot_password'),
+              onPressed: () =>
+                  Navigator.pushNamed(context, '/forgot_password'),
               child: const Text(
                 "Forgot your password?",
                 style: TextStyle(color: Colors.black),
@@ -147,3 +151,4 @@ class _LoginForm extends StatelessWidget {
     );
   }
 }
+
