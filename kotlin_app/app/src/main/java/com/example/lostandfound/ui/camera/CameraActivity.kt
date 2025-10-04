@@ -282,12 +282,18 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun analyzeImageAsync(imageFile: File) {
+        android.util.Log.d("CameraActivity", "Starting image analysis for: ${imageFile.absolutePath}")
         cameraExecutor?.execute {
             try {
                 val analysisService = ImageAnalysisService()
                 val suggestions = runBlocking { analysisService.analyzeImage(imageFile) }
                 analysisService.cleanup()
-
+                
+                android.util.Log.d("CameraActivity", "Analysis completed. Found ${suggestions.size} suggestions")
+                suggestions.forEach { suggestion ->
+                    android.util.Log.d("CameraActivity", "Suggestion: ${suggestion.title} (${suggestion.confidence})")
+                }
+                
                 runOnUiThread {
                     val intent = Intent().apply {
                         putExtra(EXTRA_IMAGE_PATH, imageFile.absolutePath)

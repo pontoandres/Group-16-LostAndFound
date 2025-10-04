@@ -27,9 +27,13 @@ class ReportLostItemActivity : AppCompatActivity() {
         private val cameraLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
+            android.util.Log.d("ReportLostItem", "Camera result received: ${result.resultCode}")
             if (result.resultCode == RESULT_OK) {
-                val imagePath = result.data?.getStringExtra("image_path")
-                val suggestions = result.data?.getParcelableArrayExtra("suggestions") as? Array<ItemSuggestion>
+                val imagePath = result.data?.getStringExtra(CameraActivity.EXTRA_IMAGE_PATH)
+                val suggestions = result.data?.getParcelableArrayExtra(CameraActivity.EXTRA_SUGGESTIONS) as? Array<ItemSuggestion>
+                
+                android.util.Log.d("ReportLostItem", "Image path: $imagePath")
+                android.util.Log.d("ReportLostItem", "Suggestions count: ${suggestions?.size ?: 0}")
                 
                 if (imagePath != null) {
                     val imageFile = File(imagePath)
@@ -39,6 +43,10 @@ class ReportLostItemActivity : AppCompatActivity() {
                     // Handle suggestions if available
                     suggestions?.let { suggestionArray ->
                         val suggestionList = suggestionArray.toList()
+                        android.util.Log.d("ReportLostItem", "Processing ${suggestionList.size} suggestions")
+                        suggestionList.forEach { suggestion ->
+                            android.util.Log.d("ReportLostItem", "Suggestion: ${suggestion.title} (${suggestion.confidence})")
+                        }
                         viewModel.setSuggestions(suggestionList)
                         showSuggestions(suggestionList)
                     }
@@ -152,7 +160,10 @@ class ReportLostItemActivity : AppCompatActivity() {
     }
     
     private fun showSuggestions(suggestions: List<ItemSuggestion>) {
+        android.util.Log.d("ReportLostItem", "showSuggestions called with ${suggestions.size} suggestions")
+        
         if (suggestions.isNotEmpty()) {
+            android.util.Log.d("ReportLostItem", "Showing suggestions UI")
             binding.layoutSuggestions.visibility = View.VISIBLE
             binding.txtSuggestionsTitle.text = "AI Suggestions (${suggestions.size})"
             
@@ -181,6 +192,7 @@ class ReportLostItemActivity : AppCompatActivity() {
                 binding.layoutAdditionalSuggestions.visibility = View.GONE
             }
         } else {
+            android.util.Log.d("ReportLostItem", "No suggestions to show")
             binding.layoutSuggestions.visibility = View.GONE
         }
     }
