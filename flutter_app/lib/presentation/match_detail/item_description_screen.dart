@@ -1,17 +1,24 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
 import '../../theme/app_theme.dart';
+import '../../viewmodels/feed/feed_viewmodel.dart';
+import '../../routes/app_routes.dart';
 
 class ItemDescriptionScreen extends StatelessWidget {
   const ItemDescriptionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final verifyCtrl = TextEditingController();
     final arg = ModalRoute.of(context)?.settings.arguments;
-    final String? imagePath = (arg is String && arg.isNotEmpty) ? arg : null;
+
+    if (arg is! FeedItem) {
+      return const Scaffold(
+        body: Center(child: Text("No item data provided")),
+      );
+    }
+
+    final item = arg;
 
     return Scaffold(
       appBar: const TopBar(title: 'Goatfound', actions: [DebugNavButton()]),
@@ -20,11 +27,15 @@ class ItemDescriptionScreen extends StatelessWidget {
         child: ListView(
           children: [
             const SizedBox(height: 8),
-            const Center(child: Text('Umbrella', style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900))),
+            Center(
+              child: Text(
+                item.title,
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+              ),
+            ),
             const SizedBox(height: 4),
-            const Text('Posted by Martin'),
+            Text("Posted on: ${item.createdAt.toLocal()}"),
             const SizedBox(height: 12),
-
             Container(
               height: 220,
               decoration: BoxDecoration(
@@ -34,12 +45,11 @@ class ItemDescriptionScreen extends StatelessWidget {
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: imagePath != null
-                    ? Image.file(File(imagePath), fit: BoxFit.cover)
+                child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                    ? Image.network(item.imageUrl!, fit: BoxFit.cover)
                     : Image.asset('assets/images/Rectangle17.png', fit: BoxFit.cover),
               ),
             ),
-
             const SizedBox(height: 16),
             const Text('Description', style: TextStyle(fontWeight: FontWeight.w700)),
             const SizedBox(height: 8),
@@ -49,22 +59,23 @@ class ItemDescriptionScreen extends StatelessWidget {
                 color: AppTheme.orange.withOpacity(.6),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: const Text(
-                'This object was found in room 606 of the ML building on Monday. '
-                'Chat with me to coordinate delivery.',
+              child: Text(
+                item.category ?? "No description available",
                 textAlign: TextAlign.center,
               ),
             ),
             const SizedBox(height: 16),
-
-            ElevatedButton(onPressed: () {}, child: const Text('Claim Object')),
-            const SizedBox(height: 12),
-            TextField(controller: verifyCtrl, decoration: const InputDecoration(hintText: 'Insert Verification Code')),
-            const SizedBox(height: 8),
-            ElevatedButton(onPressed: () {}, child: const Text('Verify')),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, AppRoutes.claim, arguments: item);
+              },
+              child: const Text('Claim Object'),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+

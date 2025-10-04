@@ -1,9 +1,9 @@
-// lib/viewmodels/feed/feed_viewmodel.dart
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class FeedItem {
   final String id;
+  final String userId;
   final String title;
   final String? location;
   final String? category;
@@ -12,6 +12,7 @@ class FeedItem {
 
   FeedItem({
     required this.id,
+    required this.userId,
     required this.title,
     this.location,
     this.category,
@@ -20,13 +21,14 @@ class FeedItem {
   });
 
   factory FeedItem.fromJson(Map<String, dynamic> json) => FeedItem(
-    id: json['id'] as String,
-    title: json['title'] as String,
-    location: json['location'] as String?,
-    category: json['category'] as String?,
-    imageUrl: json['image_url'] as String?,
-    createdAt: DateTime.parse(json['created_at'] as String),
-  );
+        id: json['id'] as String,
+        userId: json['user_id'] as String,
+        title: json['title'] as String,
+        location: json['location'] as String?,
+        category: json['category'] as String?,
+        imageUrl: json['image_url'] as String?,
+        createdAt: DateTime.parse(json['created_at'] as String),
+      );
 }
 
 class FeedViewModel extends ChangeNotifier {
@@ -40,7 +42,7 @@ class FeedViewModel extends ChangeNotifier {
 
   Future<void> init() async {
     await load();
-    _subscribeRealtime(); // opcional, pero útil
+    _subscribeRealtime();
   }
 
   Future<void> load() async {
@@ -51,7 +53,7 @@ class FeedViewModel extends ChangeNotifier {
 
       final res = await _client
           .from('lost_items')
-          .select('id,title,location,category,image_url,created_at')
+          .select('id,user_id,title,location,category,image_url,created_at')
           .order('created_at', ascending: false);
 
       items
@@ -91,3 +93,4 @@ class FeedViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
+
