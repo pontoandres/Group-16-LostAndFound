@@ -4,6 +4,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.bumptech.glide.Glide
 import com.example.lostandfound.databinding.ActivityReportLostItemBinding
+import com.example.lostandfound.services.ItemSuggestion
 import com.example.lostandfound.ui.camera.CameraActivity
 import java.io.File
 import java.text.SimpleDateFormat
@@ -22,18 +24,27 @@ class ReportLostItemActivity : AppCompatActivity() {
     private lateinit var binding: ActivityReportLostItemBinding
     private val viewModel: ReportLostItemViewModel by viewModels()
     
-    private val cameraLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            val imagePath = result.data?.getStringExtra("image_path")
-            if (imagePath != null) {
-                val imageFile = File(imagePath)
-                viewModel.setImageFile(imageFile)
-                loadImagePreview(imageFile)
+        private val cameraLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val imagePath = result.data?.getStringExtra("image_path")
+                val suggestions = result.data?.getParcelableArrayExtra("suggestions") as? Array<ItemSuggestion>
+                
+                if (imagePath != null) {
+                    val imageFile = File(imagePath)
+                    viewModel.setImageFile(imageFile)
+                    loadImagePreview(imageFile)
+                    
+                    // Handle suggestions if available
+                    suggestions?.let { suggestionArray ->
+                        val suggestionList = suggestionArray.toList()
+                        viewModel.setSuggestions(suggestionList)
+                        showSuggestions(suggestionList)
+                    }
+                }
             }
         }
-    }
     
     private val galleryLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -138,6 +149,58 @@ class ReportLostItemActivity : AppCompatActivity() {
         )
         
         datePickerDialog.show()
+    }
+    
+    private fun showSuggestions(suggestions: List<ItemSuggestion>) {
+        if (suggestions.isNotEmpty()) {
+            binding.layoutSuggestions.visibility = View.VISIBLE
+            binding.txtSuggestionsTitle.text = "AI Suggestions (${suggestions.size})"
+            
+            // Show the first suggestion as primary
+            val primarySuggestion = suggestions.first()
+            binding.btnPrimarySuggestion.text = "${primarySuggestion.title} (${(primarySuggestion.confidence * 100).toInt()}%)"
+            binding.btnPrimarySuggestion.setOnClickListener {
+                applySuggestion(primarySuggestion)
+            }
+            
+            // Show additional suggestions if available
+            if (suggestions.size > 1) {
+                binding.layoutAdditionalSuggestions.visibility = View.VISIBLE
+                binding.btnSuggestion2.text = "${suggestions[1].title} (${(suggestions[1].confidence * 100).toInt()}%)"
+                binding.btnSuggestion2.setOnClickListener {
+                    applySuggestion(suggestions[1])
+                }
+                
+                if (suggestions.size > 2) {
+                    binding.btnSuggestion3.text = "${suggestions[2].title} (${(suggestions[2].confidence * 100).toInt()}%)"
+                    binding.btnSuggestion3.setOnClickListener {
+                        applySuggestion(suggestions[2])
+                    }
+                }
+            } else {
+                binding.layoutAdditionalSuggestions.visibility = View.GONE
+            }
+        } else {
+            binding.layoutSuggestions.visibility = View.GONE
+        }
+    }
+    
+    private fun applySuggestion(suggestion: ItemSuggestion) {
+        val (title, description, category) = viewModel.applySuggestion(suggestion)
+        
+        binding.etTitle.setText(title)
+        binding.etDescription.setText(description ?: "")
+        
+        // Set category in spinner
+        val categories = viewModel.categories.value ?: emptyList()
+        val categoryIndex = categories.indexOf(category)
+        if (categoryIndex >= 0) {
+            binding.spinnerCategory.setSelection(categoryIndex)
+        }
+        
+        // Hide suggestions after applying
+        binding.layoutSuggestions.visibility = View.GONE
+        viewModel.clearSuggestions()
     }
     
     private fun updateDateDisplay() {

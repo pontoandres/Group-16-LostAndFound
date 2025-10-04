@@ -28,6 +28,9 @@
     <color name="brand_on_button">#102A43</color>
 
     <color name="brand_link">@color/c_3C3472</color>
+    <color name="brand_primary">@color/c_3C3472</color>
+    <color name="brand_text_secondary">#2B5A54</color>
+    <color name="brand_suggestion_bg">#E8F5F3</color>
 
     <color name="sys_status_bar">#1E3F3A</color>
     <color name="sys_nav_bar">#0E1E20</color>

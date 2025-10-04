@@ -16,6 +16,9 @@ import androidx.camera.view.PreviewView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.lostandfound.databinding.ActivityCameraBinding
+import com.example.lostandfound.services.ImageAnalysisService
+import com.example.lostandfound.services.ItemSuggestion
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -38,6 +41,7 @@ class CameraActivity : AppCompatActivity() {
     companion object {
         private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
         const val EXTRA_IMAGE_PATH = "image_path"
+        const val EXTRA_SUGGESTIONS = "suggestions"
     }
     
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -190,11 +194,8 @@ class CameraActivity : AppCompatActivity() {
                     // Compress and rotate image if needed
                     val compressedFile = compressAndRotateImage(photoFile)
                     
-                    val resultIntent = Intent().apply {
-                        putExtra(EXTRA_IMAGE_PATH, compressedFile.absolutePath)
-                    }
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
+                    // Analyze image for suggestions
+                    analyzeImageAsync(compressedFile)
                 }
                 
                 override fun onError(exception: ImageCaptureException) {
@@ -244,6 +245,34 @@ class CameraActivity : AppCompatActivity() {
         val matrix = Matrix()
         matrix.postRotate(degrees)
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+    }
+    
+    private fun analyzeImageAsync(imageFile: File) {
+        cameraExecutor?.execute {
+            try {
+                val analysisService = ImageAnalysisService()
+                val suggestions = runBlocking { analysisService.analyzeImage(imageFile) }
+                analysisService.cleanup()
+                
+                runOnUiThread {
+                    val resultIntent = Intent().apply {
+                        putExtra(EXTRA_IMAGE_PATH, imageFile.absolutePath)
+                        putExtra(EXTRA_SUGGESTIONS, suggestions.toTypedArray())
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
+                }
+            } catch (e: Exception) {
+                runOnUiThread {
+                    Toast.makeText(this@CameraActivity, "Image analysis failed", Toast.LENGTH_SHORT).show()
+                    val resultIntent = Intent().apply {
+                        putExtra(EXTRA_IMAGE_PATH, imageFile.absolutePath)
+                    }
+                    setResult(RESULT_OK, resultIntent)
+                    finish()
+                }
+            }
+        }
     }
     
     override fun onDestroy() {

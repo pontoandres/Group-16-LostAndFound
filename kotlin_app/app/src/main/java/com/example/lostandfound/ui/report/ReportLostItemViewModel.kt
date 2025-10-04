@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lostandfound.data.repository.LostItemsRepository
 import com.example.lostandfound.data.repository.LostItemsRepositoryImpl
+import com.example.lostandfound.services.ItemSuggestion
 import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
@@ -16,7 +17,9 @@ data class ReportLostItemState(
     val error: String? = null,
     val success: Boolean = false,
     val imageFile: File? = null,
-    val lostDate: Date? = null
+    val lostDate: Date? = null,
+    val suggestions: List<ItemSuggestion> = emptyList(),
+    val selectedSuggestion: ItemSuggestion? = null
 )
 
 class ReportLostItemViewModel : ViewModel() {
@@ -47,6 +50,26 @@ class ReportLostItemViewModel : ViewModel() {
     
     fun clearError() {
         _state.value = _state.value?.copy(error = null)
+    }
+    
+    fun setSuggestions(suggestions: List<ItemSuggestion>) {
+        _state.value = _state.value?.copy(suggestions = suggestions)
+    }
+    
+    fun selectSuggestion(suggestion: ItemSuggestion) {
+        _state.value = _state.value?.copy(selectedSuggestion = suggestion)
+    }
+    
+    fun clearSuggestions() {
+        _state.value = _state.value?.copy(suggestions = emptyList(), selectedSuggestion = null)
+    }
+    
+    fun applySuggestion(suggestion: ItemSuggestion): Triple<String, String?, String?> {
+        return Triple(
+            suggestion.title,
+            suggestion.description,
+            suggestion.category
+        )
     }
     
     fun submitLostItem(
