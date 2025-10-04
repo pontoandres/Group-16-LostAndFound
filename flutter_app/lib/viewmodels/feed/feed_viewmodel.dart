@@ -1,17 +1,47 @@
+// lib/viewmodels/feed/feed_viewmodel.dart
 import 'package:flutter/material.dart';
-import '../../services/lost_items_service.dart';
-import 'package:supabase_flutter/supabase_flutter.dart'
-    show RealtimeChannel; 
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+class FeedItem {
+  final String id;
+  final String title;
+  final String? location;
+  final String? category;
+  final String? imageUrl;
+  final DateTime createdAt;
 
+  FeedItem({
+    required this.id,
+    required this.title,
+    this.location,
+    this.category,
+    this.imageUrl,
+    required this.createdAt,
+  });
+
+  factory FeedItem.fromJson(Map<String, dynamic> json) => FeedItem(
+    id: json['id'] as String,
+    title: json['title'] as String,
+    location: json['location'] as String?,
+    category: json['category'] as String?,
+    imageUrl: json['image_url'] as String?,
+    createdAt: DateTime.parse(json['created_at'] as String),
+  );
+}
 
 class FeedViewModel extends ChangeNotifier {
-  final _service = LostItemsService();
+  final _client = Supabase.instance.client;
 
-  List<LostItem> items = [];
+  final List<FeedItem> items = [];
   bool isLoading = false;
   String? error;
+
   RealtimeChannel? _channel;
+
+  Future<void> init() async {
+    await load();
+    _subscribeRealtime(); // opcional, pero útil
+  }
 
   Future<void> load() async {
     try {
@@ -19,22 +49,40 @@ class FeedViewModel extends ChangeNotifier {
       error = null;
       notifyListeners();
 
-      items = await _service.fetchFeed();
+      final res = await _client
+          .from('lost_items')
+          .select('id,title,location,category,image_url,created_at')
+          .order('created_at', ascending: false);
+
+      items
+        ..clear()
+        ..addAll((res as List).map((e) => FeedItem.fromJson(e as Map<String, dynamic>)));
+    } on PostgrestException catch (e) {
+      error = e.message;
     } catch (e) {
-      error = '$e';
+      error = 'Unexpected error loading feed';
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
-  /// Actualizaciones en tiempo real
-  void subscribeRealtime() {
+  void _subscribeRealtime() {
     _channel?.unsubscribe();
-    _channel = _service.subscribe((newItem) {
-      items = [newItem, ...items]; // prepend
-      notifyListeners();
-    });
+    _channel = _client.channel('public:lost_items')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'lost_items',
+        callback: (payload) {
+          final newRow = payload.newRecord;
+          if (newRow != null) {
+            items.insert(0, FeedItem.fromJson(newRow));
+            notifyListeners();
+          }
+        },
+      )
+      ..subscribe();
   }
 
   @override
