@@ -3,6 +3,7 @@
 local.properties
 /.idea/
 kotlin_app/.idea/
+kotlin_app/.kotlin/
 captures/
 .externalNativeBuild/
 .cxx/

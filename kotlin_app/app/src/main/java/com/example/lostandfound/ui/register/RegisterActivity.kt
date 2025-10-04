@@ -5,15 +5,14 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.lostandfound.data.repository.AuthRepositoryImpl
 import com.example.lostandfound.databinding.ActivityRegisterBinding
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import androidx.core.widget.doAfterTextChanged
 
-
-class RegisterActivity: AppCompatActivity() {
+class RegisterActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegisterBinding
     private val vm: RegisterViewModel by viewModels {
@@ -36,9 +35,14 @@ class RegisterActivity: AppCompatActivity() {
         lifecycleScope.launch {
             vm.ui.collectLatest { s ->
                 binding.progress.visibility = if (s.loading) View.VISIBLE else View.GONE
-                if (s.error != null) Toast.makeText(this@RegisterActivity, s.error, Toast.LENGTH_SHORT).show()
+                binding.btnCreate.isEnabled = !s.loading
+
+                s.error?.let {
+                    Toast.makeText(this@RegisterActivity, it, Toast.LENGTH_SHORT).show()
+                }
+
                 if (s.success) {
-                    Toast.makeText(this@RegisterActivity, "Account created!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@RegisterActivity, "Cuenta creada 👌", Toast.LENGTH_SHORT).show()
                     finish() // vuelve al Login
                 }
             }

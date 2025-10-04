@@ -29,15 +29,39 @@ class RegisterViewModel(private val repo: AuthRepository): ViewModel() {
 
     fun register() = viewModelScope.launch {
         val s = _ui.value
-        if (s.email.isBlank() || s.password.length < 8 || s.name.isBlank() || s.uniId.isBlank()) {
-            _ui.value = s.copy(error = "Fill all fields. Password ≥ 8 chars")
-            return@launch
+        val email = s.email.trim()
+        val pass  = s.password
+        val name  = s.name.trim()
+        val uniId = s.uniId.trim()
+
+        when {
+            email.isEmpty() -> {
+                _ui.value = s.copy(error = "Ingresa tu correo")
+                return@launch
+            }
+            !email.endsWith("@gmail.com", ignoreCase = true) -> {
+                _ui.value = s.copy(error = "El correo debe ser @gmail.com")
+                return@launch
+            }
+            pass.length < 8 -> {
+                _ui.value = s.copy(error = "La contraseña debe tener al menos 8 caracteres")
+                return@launch
+            }
+            name.isEmpty() -> {
+                _ui.value = s.copy(error = "Ingresa tu nombre")
+                return@launch
+            }
+            uniId.isEmpty() -> {
+                _ui.value = s.copy(error = "Ingresa tu ID universitario")
+                return@launch
+            }
         }
+
         _ui.value = s.copy(loading = true, error = null)
-        val res = repo.register(s.email.trim(), s.password, s.name.trim(), s.uniId.trim())
+        val res = repo.register(email, pass, name, uniId)
         _ui.value = res.fold(
             onSuccess = { _ui.value.copy(loading = false, success = true) },
-            onFailure = { e -> _ui.value.copy(loading = false, error = e.message ?: "Register failed") }
+            onFailure = { e -> _ui.value.copy(loading = false, error = e.message ?: "No fue posible crear la cuenta") }
         )
     }
 
