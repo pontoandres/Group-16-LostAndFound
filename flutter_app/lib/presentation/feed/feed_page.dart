@@ -1,32 +1,16 @@
+// lib/presentation/feed/feed_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import '../../viewmodels/feed/feed_viewmodel.dart';
 
-class FeedPage extends StatefulWidget {
+class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
-
-  @override
-  State<FeedPage> createState() => _FeedPageState();
-}
-
-class _FeedPageState extends State<FeedPage> {
-  @override
-  void initState() {
-    super.initState();
-    // Cargar y suscribirse cuando el provider esté creado
-    // Usamos addPostFrame para tener contexto válido
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final vm = context.read<FeedViewModel>();
-      vm.load();
-      vm.subscribeRealtime(); // puedes quitarlo si no quieres realtime
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (_) => FeedViewModel(),
+      // Dispara carga inicial + suscripción realtime
+      create: (_) => FeedViewModel()..init(),
       child: const _FeedBody(),
     );
   }
@@ -54,30 +38,32 @@ class _FeedBody extends StatelessWidget {
             if (vm.items.isEmpty) {
               return const Center(child: Text('No lost items reported yet.'));
             }
+
             return ListView.separated(
               padding: const EdgeInsets.all(12),
               itemCount: vm.items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
                 final it = vm.items[i];
-                return Card(
+                return Card( // <- Material ancestor para ListTile
                   child: ListTile(
-            leading: it.imageUrl != null
-            ? ClipRRect(
-                borderRadius: BorderRadius.circular(6),
-                    child: Image.network(
-                  it.imageUrl!,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                      ),
-                    )
-                      : const Icon(Icons.search),
-
+                    leading: it.imageUrl != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Image.network(
+                              it.imageUrl!,
+                              width: 56,
+                              height: 56,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : const Icon(Icons.search),
                     title: Text(it.title),
                     subtitle: Text([
-                      if (it.location != null && it.location!.isNotEmpty) '📍 ${it.location}',
-                      if (it.category != null && it.category!.isNotEmpty) '🏷️ ${it.category}',
+                      if (it.location != null && it.location!.isNotEmpty)
+                        '📍 ${it.location}',
+                      if (it.category != null && it.category!.isNotEmpty)
+                        '🏷️ ${it.category}',
                       '🕒 ${it.createdAt.toLocal()}',
                     ].where((e) => e.isNotEmpty).join(' · ')),
                   ),
