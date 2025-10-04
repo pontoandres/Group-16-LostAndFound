@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 import '../presentation/login/login_page.dart';
 import '../presentation/register/register_page.dart';
 import '../presentation/forgot_password/forgot_password.dart';
@@ -15,12 +14,11 @@ import '../presentation/camera/camera_screen.dart';
 import '../presentation/config/config_screen.dart';
 import '../presentation/reset_password/reset_password_page.dart';
 
-
 class AppRoutes {
   static const String login = '/login';
   static const String register = '/register';
   static const String forgotPassword = '/forgot_password';
-  static const String feed = '/feed'; 
+  static const String feed = '/feed';
   static const String profile = '/profile';
   static const String lostReport = '/lost_report';
   static const String foundReport = '/found_report';
@@ -31,8 +29,6 @@ class AppRoutes {
   static const String camera = '/camera';
   static const String config = '/config';
   static const String resetPassword = '/reset_password';
-
-
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -48,8 +44,7 @@ class AppRoutes {
       history: (_) => const HistoryScreen(),
       camera: (_) => const CameraScreen(),
       config: (_) => const ConfigScreen(),
-      resetPassword: (_) => const ResetPasswordPage(),   
-   
+      resetPassword: (_) => const ResetPasswordPage(),
     };
   }
 }

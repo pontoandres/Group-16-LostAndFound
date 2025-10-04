@@ -1,7 +1,7 @@
-// lib/presentation/feed/feed_page.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
+import '../../routes/app_routes.dart';
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
@@ -9,7 +9,6 @@ class FeedPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      // Dispara carga inicial + suscripción realtime
       create: (_) => FeedViewModel()..init(),
       child: const _FeedBody(),
     );
@@ -45,7 +44,7 @@ class _FeedBody extends StatelessWidget {
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
                 final it = vm.items[i];
-                return Card( // <- Material ancestor para ListTile
+                return Card(
                   child: ListTile(
                     leading: it.imageUrl != null
                         ? ClipRRect(
@@ -66,6 +65,13 @@ class _FeedBody extends StatelessWidget {
                         '🏷️ ${it.category}',
                       '🕒 ${it.createdAt.toLocal()}',
                     ].where((e) => e.isNotEmpty).join(' · ')),
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.matchDetail,
+                        arguments: it,
+                      );
+                    },
                   ),
                 );
               },
@@ -80,7 +86,7 @@ class _FeedBody extends StatelessWidget {
             height: 52,
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () => Navigator.pushNamed(context, '/lost_report')
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.lostReport)
                   .then((_) => context.read<FeedViewModel>().load()),
               child: const Text('Report a lost item'),
             ),
@@ -90,3 +96,5 @@ class _FeedBody extends StatelessWidget {
     );
   }
 }
+
+
