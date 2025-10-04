@@ -23,5 +23,14 @@ data class LostItem(
     @SerialName("claimed_by_id")
     val claimedById: String? = null,
     @SerialName("claimed_at")
-    val claimedAt: String? = null
-)
+    val claimedAt: String? = null,
+    // Legacy fields for backward compatibility
+    val legacyName: String? = null,
+    val legacyPostedBy: String? = null,
+    val legacyImageRes: Int? = null
+) {
+    // Computed properties for backward compatibility
+    fun getName(): String = legacyName ?: title
+    fun getPostedBy(): String = legacyPostedBy ?: userId
+    fun getImageRes(): Int = legacyImageRes ?: 0
+}

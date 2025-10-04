@@ -31,7 +31,7 @@ class LostItemAdapter(
         if (q.isEmpty()) {
             data.addAll(all)
         } else {
-            data.addAll(all.filter { it.name.lowercase(Locale.getDefault()).contains(q) })
+            data.addAll(all.filter { it.getName().lowercase(Locale.getDefault()).contains(q) })
         }
         notifyDataSetChanged()
     }
@@ -50,8 +50,8 @@ class LostItemAdapter(
         private val name: TextView = itemView.findViewById(R.id.txtName)
 
         fun bind(item: LostItem) {
-            img.setImageResource(item.imageRes)
-            name.text = item.name
+            img.setImageResource(item.getImageRes())
+            name.text = item.getName()
             itemView.setOnClickListener { onItemClick(item) }
             name.setOnClickListener { onItemClick(item) }
         }
