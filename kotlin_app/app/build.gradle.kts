@@ -82,5 +82,4 @@ dependencies {
 
     // Image handling
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("androidx.activity:activity-result:1.8.3")
 }
