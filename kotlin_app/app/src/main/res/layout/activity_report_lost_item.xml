@@ -156,12 +156,12 @@
                 android:hint="Describe the lost item..." />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Details Label -->
+        <!-- Location Label -->
         <TextView
-            android:id="@+id/txtDetailsLabel"
+            android:id="@+id/txtLocationLabel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Additional Details"
+            android:text="Location"
             android:textStyle="bold"
             android:textColor="@android:color/black"
             app:layout_constraintTop_toBottomOf="@id/tilDescription"
@@ -169,9 +169,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp"/>
 
-        <!-- Details Text Area -->
+        <!-- Location Input -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilDetails"
+            android:id="@+id/tilLocation"
             style="@style/Widget.Material3.TextInputLayout.FilledBox"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -182,20 +182,86 @@
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusBottomEnd="12dp"
-            app:layout_constraintTop_toBottomOf="@id/txtDetailsLabel"
+            app:layout_constraintTop_toBottomOf="@id/txtLocationLabel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDetails"
+                android:id="@+id/etLocation"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textMultiLine"
-                android:lines="3"
+                android:inputType="text"
                 android:textColorHint="@color/brand_input_hint"
-                android:hint="Additional details (location, time, etc.)..." />
+                android:hint="Where did you lose it?" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Category Label -->
+        <TextView
+            android:id="@+id/txtCategoryLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Category"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/tilLocation"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Category Spinner -->
+        <Spinner
+            android:id="@+id/spinnerCategory"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/txtCategoryLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- Date Label -->
+        <TextView
+            android:id="@+id/txtDateLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Lost Date"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/spinnerCategory"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp"/>
+
+        <!-- Date Selection -->
+        <LinearLayout
+            android:id="@+id/layoutDateSelection"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/txtDateLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/txtSelectedDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Lost on: Today"
+                android:textColor="@android:color/black"
+                android:padding="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectDate"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Select Date"
+                android:textAllCaps="false"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
 
         <!-- Bottom Buttons -->
         <LinearLayout
@@ -204,7 +270,7 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="24dp"
-            app:layout_constraintTop_toBottomOf="@id/tilDetails"
+            app:layout_constraintTop_toBottomOf="@id/layoutDateSelection"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
@@ -241,6 +307,17 @@
                 android:elevation="4dp" />
 
         </LinearLayout>
+
+        <!-- Progress Bar -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/bottomButtons"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

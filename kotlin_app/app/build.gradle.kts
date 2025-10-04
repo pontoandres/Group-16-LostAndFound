@@ -68,6 +68,7 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.4"))
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
 
     // Ktor client para Android (requerido por supabase-kt 3.x)
     implementation("io.ktor:ktor-client-android:3.3.0")
@@ -78,4 +79,8 @@ dependencies {
     implementation("androidx.browser:browser") {
         version { strictly("1.8.0") }
     }
+
+    // Image handling
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.activity:activity-result:1.8.3")
 }
