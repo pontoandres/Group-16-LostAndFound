@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 data class LoginUiState(
-    val email: String="",
+    val email: String = "",
     val password: String = "",
     val loading: Boolean = false,
     val error: String? = null,
@@ -21,28 +21,39 @@ class LoginViewModel(private val repo: AuthRepository) : ViewModel() {
     private val _ui = MutableStateFlow(LoginUiState())
     val ui: StateFlow<LoginUiState> = _ui
 
-    fun onEmailChanged(v: String) {_ui.value = _ui.value.copy(email = v, error = null)}
-    fun onPasswordChanged(v: String) {_ui.value = _ui.value.copy(password = v, error = null)}
+    fun onEmailChanged(v: String) { _ui.value = _ui.value.copy(email = v, error = null) }
+    fun onPasswordChanged(v: String) { _ui.value = _ui.value.copy(password = v, error = null) }
 
     fun login() {
         val email = _ui.value.email.trim()
         val pass = _ui.value.password
 
-        if(email.isEmpty() || pass.length < 8) {
-            _ui.value = _ui.value.copy(error = "Enter a valid email and 8+ char password")
-            return
+        // Validaciones de UI (coherentes con el repositorio)
+        when {
+            email.isEmpty() -> {
+                _ui.value = _ui.value.copy(error = "Ingresa tu correo")
+                return
+            }
+            !email.endsWith("@gmail.com", ignoreCase = true) -> {
+                _ui.value = _ui.value.copy(error = "El correo debe ser @gmail.com")
+                return
+            }
+            pass.length < 8 -> {
+                _ui.value = _ui.value.copy(error = "La contraseña debe tener al menos 8 caracteres")
+                return
+            }
         }
+
         viewModelScope.launch {
             _ui.value = _ui.value.copy(loading = true, error = null, success = false)
             val res = repo.login(email, pass)
             _ui.value = res.fold(
                 onSuccess = { _ui.value.copy(loading = false, success = true) },
-                onFailure = { _ui.value.copy(loading = false, error = it.message ?: "Login failed") }
+                onFailure = { _ui.value.copy(loading = false, error = it.message ?: "No fue posible iniciar sesión") }
             )
         }
     }
 
-    // Factory sin DI (simple para el curso)
     class Factory(private val repo: AuthRepository) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
