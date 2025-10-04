@@ -40,6 +40,7 @@ class CameraActivity : AppCompatActivity() {
     
     companion object {
         private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
+        private const val STORAGE_PERMISSION_REQUEST_CODE = 1002
         const val EXTRA_IMAGE_PATH = "image_path"
         const val EXTRA_SUGGESTIONS = "suggestions"
     }
@@ -51,10 +52,10 @@ class CameraActivity : AppCompatActivity() {
         
         setupClickListeners()
         
-        if (checkCameraPermission()) {
+        if (checkAllPermissions()) {
             startCamera()
         } else {
-            requestCameraPermission()
+            requestAllPermissions()
         }
     }
     
@@ -86,6 +87,40 @@ class CameraActivity : AppCompatActivity() {
         }
     }
     
+    private fun checkAllPermissions(): Boolean {
+        val cameraPermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+        
+        val storagePermission = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        ) == PackageManager.PERMISSION_GRANTED
+        
+        return cameraPermission && storagePermission
+    }
+    
+    private fun requestAllPermissions() {
+        val permissions = mutableListOf<String>()
+        
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.CAMERA)
+        }
+        
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+        
+        if (permissions.isNotEmpty()) {
+            ActivityCompat.requestPermissions(
+                this,
+                permissions.toTypedArray(),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
+        }
+    }
+    
     private fun checkCameraPermission(): Boolean {
         return ContextCompat.checkSelfPermission(
             this,
@@ -109,10 +144,10 @@ class CameraActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         
         if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.isNotEmpty() && grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
                 startCamera()
             } else {
-                Toast.makeText(this, "Camera permission is required", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Camera and storage permissions are required", Toast.LENGTH_SHORT).show()
                 finish()
             }
         }
@@ -178,9 +213,10 @@ class CameraActivity : AppCompatActivity() {
     private fun capturePhoto() {
         val imageCapture = imageCapture ?: return
         
-        // Create output file
+        // Create output file with proper directory handling
+        val outputDir = getExternalFilesDir(null) ?: filesDir
         val photoFile = File(
-            getExternalFilesDir(null),
+            outputDir,
             "IMG_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())}.jpg"
         )
         
@@ -191,15 +227,24 @@ class CameraActivity : AppCompatActivity() {
             ContextCompat.getMainExecutor(this),
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                    // Compress and rotate image if needed
-                    val compressedFile = compressAndRotateImage(photoFile)
-                    
-                    // Analyze image for suggestions
-                    analyzeImageAsync(compressedFile)
+                    try {
+                        // Compress and rotate image if needed
+                        val compressedFile = compressAndRotateImage(photoFile)
+                        
+                        // Analyze image for suggestions
+                        analyzeImageAsync(compressedFile)
+                    } catch (e: Exception) {
+                        Toast.makeText(this@CameraActivity, "Error processing image: ${e.message}", Toast.LENGTH_SHORT).show()
+                        val resultIntent = Intent().apply {
+                            putExtra(EXTRA_IMAGE_PATH, photoFile.absolutePath)
+                        }
+                        setResult(RESULT_OK, resultIntent)
+                        finish()
+                    }
                 }
                 
                 override fun onError(exception: ImageCaptureException) {
-                    Toast.makeText(this@CameraActivity, "Failed to capture photo", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@CameraActivity, "Failed to capture photo: ${exception.message}", Toast.LENGTH_SHORT).show()
                 }
             }
         )
@@ -210,8 +255,9 @@ class CameraActivity : AppCompatActivity() {
         val rotatedBitmap = rotateImageIfRequired(bitmap, imageFile.absolutePath)
         
         // Compress the image
+        val outputDir = getExternalFilesDir(null) ?: filesDir
         val compressedFile = File(
-            getExternalFilesDir(null),
+            outputDir,
             "compressed_${imageFile.name}"
         )
         
@@ -264,7 +310,8 @@ class CameraActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 runOnUiThread {
-                    Toast.makeText(this@CameraActivity, "Image analysis failed", Toast.LENGTH_SHORT).show()
+                    // Log error but don't crash - just return image without suggestions
+                    android.util.Log.e("CameraActivity", "Image analysis failed", e)
                     val resultIntent = Intent().apply {
                         putExtra(EXTRA_IMAGE_PATH, imageFile.absolutePath)
                     }
