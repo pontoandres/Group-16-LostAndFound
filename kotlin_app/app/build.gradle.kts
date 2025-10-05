@@ -78,4 +78,6 @@ dependencies {
     implementation("androidx.browser:browser") {
         version { strictly("1.8.0") }
     }
+    //Lightweight image loader
+    implementation("io.coil-kt:coil:2.6.0")
 }

@@ -1,15 +1,19 @@
 package com.example.lostandfound.ui.home
 
+import LostItem
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lostandfound.R
-import com.example.lostandfound.model.LostItem
 import com.google.android.material.textfield.TextInputEditText
 import android.content.Intent
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import com.example.lostandfound.SupabaseProvider
+import com.example.lostandfound.model.Profile
+import io.github.jan.supabase.postgrest.postgrest
 import com.example.lostandfound.ui.common.BaseActivity
 
 
@@ -28,10 +32,10 @@ class HomeActivity : BaseActivity() {
 
         adapter = LostItemAdapter { item ->
                 val intent = Intent(this, com.example.lostandfound.ui.detail.ItemDetailActivity::class.java)
-                .putExtra("name", item.name)
+                .putExtra("name", item.title)
                 .putExtra("description", item.description)
                 .putExtra("postedBy", item.postedBy)
-                .putExtra("imageRes", item.imageRes)
+                .putExtra("imageUrl", item.image_url)
                 .putExtra("isOwner", true) // por ahora visible; cambia a true/false para probar
 
             startActivity(intent)
@@ -42,7 +46,7 @@ class HomeActivity : BaseActivity() {
         rv.adapter = adapter
 
         // Datos de muestra (usa los drawables reales)
-        val items = listOf(
+        /*val items = listOf(
             LostItem(
                 id = "umbrella1",
                 name = "Umbrella",
@@ -99,8 +103,9 @@ class HomeActivity : BaseActivity() {
                 postedBy = "Maria",
                 imageRes = R.drawable.ic_backpack
             )
-        )
-        adapter.submitList(items)
+        )*/
+
+        loadLostItems()
 
         edt.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -127,5 +132,30 @@ class HomeActivity : BaseActivity() {
 
 
 
+    }
+
+    private fun loadLostItems() {
+        lifecycleScope.launch {
+            try {
+                val lostItems = SupabaseProvider.client
+                    .postgrest["lost_items"]
+                    .select().decodeList<LostItem>()
+
+                val profiles = SupabaseProvider.client
+                    .postgrest["profiles"]
+                    .select()
+                    .decodeList<Profile>()
+
+                val mergedItems = lostItems.map { item ->
+                    val user = profiles.find { it.id == item.user_id }
+                    item.copy(postedBy = user?.name ?: "Unknown")
+                }
+
+                adapter.submitList(mergedItems)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
 }
