@@ -10,8 +10,6 @@
     <!-- Android 12 y menores -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" 
-        android:maxSdkVersion="32" />
 
     <!-- Declarar la feature de cámara como no requerida para evitar el warning -->
     <uses-feature

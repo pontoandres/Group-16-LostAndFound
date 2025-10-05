@@ -30,7 +30,12 @@ class ReportLostItemActivity : AppCompatActivity() {
             android.util.Log.d("ReportLostItem", "Camera result received: ${result.resultCode}")
             if (result.resultCode == RESULT_OK) {
                 val imagePath = result.data?.getStringExtra(CameraActivity.EXTRA_IMAGE_PATH)
-                val suggestions = result.data?.getParcelableArrayExtra(CameraActivity.EXTRA_SUGGESTIONS) as? Array<ItemSuggestion>
+                val suggestions = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                    result.data?.getParcelableArrayListExtra(CameraActivity.EXTRA_SUGGESTIONS, ItemSuggestion::class.java)
+                } else {
+                    @Suppress("DEPRECATION")
+                    result.data?.getParcelableArrayListExtra<ItemSuggestion>(CameraActivity.EXTRA_SUGGESTIONS)
+                }
                 
                 android.util.Log.d("ReportLostItem", "Image path: $imagePath")
                 android.util.Log.d("ReportLostItem", "Suggestions count: ${suggestions?.size ?: 0}")
@@ -43,8 +48,7 @@ class ReportLostItemActivity : AppCompatActivity() {
                     loadImagePreview(imageFile)
                     
                     // Handle suggestions if available
-                    suggestions?.let { suggestionArray ->
-                        val suggestionList = suggestionArray.toList()
+                    suggestions?.let { suggestionList ->
                         android.util.Log.d("ReportLostItem", "Processing ${suggestionList.size} suggestions")
                         suggestionList.forEach { suggestion ->
                             android.util.Log.d("ReportLostItem", "Suggestion: ${suggestion.title} (${suggestion.confidence})")
