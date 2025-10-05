@@ -40,7 +40,7 @@ class _FeedBodyState extends State<_FeedBody> {
 
       messenger.showMaterialBanner(
         MaterialBanner(
-          content: const Text('Cuidado, de noche es más fácil que se te pierdan las cosas'),
+          content: const Text('Careful! At night it’s easier to lose your belongings.'),
           leading: const Icon(Icons.nightlight_round),
           actions: [
             TextButton(
