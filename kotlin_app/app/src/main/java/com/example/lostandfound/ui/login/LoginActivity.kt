@@ -15,9 +15,10 @@ import kotlinx.coroutines.launch
 import android.content.Intent
 import com.example.lostandfound.ui.register.RegisterActivity
 import com.example.lostandfound.ui.forgotpassword.ForgotPasswordActivity
+import com.example.lostandfound.ui.common.BaseActivity
 
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     private lateinit var binding: ActivityLoginBinding
 

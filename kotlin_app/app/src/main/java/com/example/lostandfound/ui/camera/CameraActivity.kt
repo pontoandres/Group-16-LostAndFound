@@ -17,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.exifinterface.media.ExifInterface
 import com.example.lostandfound.databinding.ActivityCameraBinding
 import com.example.lostandfound.services.ImageAnalysisService
+import com.example.lostandfound.ui.common.BaseActivity
 import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.io.FileOutputStream
@@ -25,7 +26,7 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
-class CameraActivity : AppCompatActivity() {
+class CameraActivity : BaseActivity() {
 
     private lateinit var binding: ActivityCameraBinding
 
