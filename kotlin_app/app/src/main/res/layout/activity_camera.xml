@@ -2,9 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black">
+    android:background="@android:color/black"
+    android:fitsSystemWindows="false"
+    android:clipToPadding="false">
 
     <!-- Camera Preview -->
     <androidx.camera.view.PreviewView
@@ -16,9 +19,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Top Controls -->
+    <!-- Top Controls (appBar para que BaseActivity aplique padding de status bar) -->
     <LinearLayout
-        android:id="@+id/topControls"
+        android:id="@+id/appBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -33,10 +36,10 @@
             android:id="@+id/btnBack"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_revert"
+            app:srcCompat="@android:drawable/ic_menu_revert"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:tint="@android:color/white" />
+            app:tint="@android:color/white" />
 
         <!-- Flash Toggle -->
         <ImageView
@@ -44,10 +47,10 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginStart="16dp"
-            android:src="@android:drawable/ic_menu_manage"
+            app:srcCompat="@android:drawable/ic_menu_manage"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:tint="@android:color/white" />
+            app:tint="@android:color/white" />
 
         <!-- Camera Switch -->
         <ImageView
@@ -55,16 +58,16 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginStart="16dp"
-            android:src="@android:drawable/ic_menu_rotate"
+            app:srcCompat="@android:drawable/ic_menu_rotate"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="4dp"
-            android:tint="@android:color/white" />
+            app:tint="@android:color/white" />
 
     </LinearLayout>
 
-    <!-- Bottom Controls -->
+    <!-- Bottom Controls (bottomBar para que BaseActivity aplique padding de nav bar) -->
     <LinearLayout
-        android:id="@+id/bottomControls"
+        android:id="@+id/bottomBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -80,7 +83,7 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginEnd="24dp"
-            android:src="@android:drawable/ic_menu_gallery"
+            app:srcCompat="@android:drawable/ic_menu_gallery"
             android:background="@drawable/circle_background"
             android:scaleType="centerCrop" />
 
@@ -89,7 +92,7 @@
             android:id="@+id/btnCapture"
             android:layout_width="72dp"
             android:layout_height="72dp"
-            android:src="@android:drawable/ic_menu_camera"
+            app:srcCompat="@android:drawable/ic_menu_camera"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp" />
 
@@ -99,11 +102,10 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_marginStart="24dp"
-            android:src="@android:drawable/ic_menu_preferences"
+            app:srcCompat="@android:drawable/ic_menu_preferences"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
-            android:tint="@android:color/white" />
-
+            app:tint="@android:color/white" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,15 +1,15 @@
 package com.example.lostandfound.ui.home
 
-import LostItem
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.lostandfound.R
-import java.util.Locale
 import coil.load
+import com.example.lostandfound.R
+import com.example.lostandfound.model.LostItem
+import java.util.Locale
 
 class LostItemAdapter(
     private val onItemClick: (LostItem) -> Unit
@@ -32,13 +32,16 @@ class LostItemAdapter(
         if (q.isEmpty()) {
             data.addAll(all)
         } else {
-            data.addAll(all.filter { it.getName().lowercase(Locale.getDefault()).contains(q) })
+            data.addAll(
+                all.filter { it.getName().lowercase(Locale.getDefault()).contains(q) }
+            )
         }
         notifyDataSetChanged()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_lost, parent, false)
+        val v = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_lost, parent, false)
         return VH(v)
     }
 
@@ -65,6 +68,5 @@ class LostItemAdapter(
 
             itemView.setOnClickListener { onItemClick(item) }
         }
-
     }
 }

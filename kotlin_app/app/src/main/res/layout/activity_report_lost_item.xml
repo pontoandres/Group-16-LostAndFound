@@ -128,7 +128,7 @@
             app:layout_constraintTop_toBottomOf="@id/cardImageUpload"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
-            
+
             <TextView
                 android:id="@+id/txtSuggestionsTitle"
                 android:layout_width="wrap_content"
@@ -137,7 +137,7 @@
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/brand_primary" />
-            
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -145,7 +145,7 @@
                 android:text="Tap to auto-fill form"
                 android:textSize="12sp"
                 android:textColor="@color/brand_text_secondary" />
-            
+
             <!-- Primary Suggestion -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPrimarySuggestion"
@@ -157,7 +157,7 @@
                 android:textAllCaps="false"
                 app:cornerRadius="8dp"
                 app:strokeColor="@color/brand_primary" />
-            
+
             <!-- Additional Suggestions -->
             <LinearLayout
                 android:id="@+id/layoutAdditionalSuggestions"
@@ -165,7 +165,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="8dp">
-                
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSuggestion2"
                     style="@style/Widget.Material3.Button.TextButton"
@@ -176,7 +176,7 @@
                     android:text="Mobile (72%)"
                     android:textAllCaps="false"
                     android:textSize="12sp" />
-                
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnSuggestion3"
                     style="@style/Widget.Material3.Button.TextButton"

@@ -51,7 +51,7 @@ class ReportLostItemViewModel : ViewModel() {
     fun clearError() {
         _state.value = _state.value?.copy(error = null)
     }
-    
+
     fun setSuggestions(suggestions: List<ItemSuggestion>) {
         _state.value = _state.value?.copy(suggestions = suggestions)
     }
@@ -71,7 +71,7 @@ class ReportLostItemViewModel : ViewModel() {
             suggestion.category
         )
     }
-    
+
     fun submitLostItem(
         title: String,
         description: String,
@@ -82,19 +82,21 @@ class ReportLostItemViewModel : ViewModel() {
             _state.value = _state.value?.copy(error = "Title is required")
             return
         }
-        
+
         if (description.trim().isEmpty()) {
             _state.value = _state.value?.copy(error = "Description is required")
             return
         }
-        
+
         viewModelScope.launch {
             _state.value = _state.value?.copy(isLoading = true, error = null)
-            
+
             try {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US).apply {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
                 val lostAt = _state.value?.lostDate?.let { dateFormat.format(it) }
-                
+
                 repository.createLostItem(
                     title = title.trim(),
                     description = description.trim().takeIf { it.isNotEmpty() },
@@ -103,13 +105,13 @@ class ReportLostItemViewModel : ViewModel() {
                     lostAt = lostAt,
                     imageFile = _state.value?.imageFile
                 )
-                
+
                 _state.value = _state.value?.copy(
                     isLoading = false,
                     success = true,
                     error = null
                 )
-                
+
             } catch (e: Exception) {
                 _state.value = _state.value?.copy(
                     isLoading = false,
@@ -118,4 +120,5 @@ class ReportLostItemViewModel : ViewModel() {
             }
         }
     }
+
 }
