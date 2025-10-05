@@ -1,4 +1,6 @@
-package com.example.lostandfound.model
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName

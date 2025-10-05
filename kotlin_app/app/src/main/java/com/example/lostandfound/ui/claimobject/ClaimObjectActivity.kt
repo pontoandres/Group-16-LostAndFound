@@ -37,6 +37,7 @@ class ClaimObjectActivity : BaseActivity() {
             val message = edtMessage.text.toString().trim()
             if (message.isNotEmpty()) {
                 Toast.makeText(this, "Feature in progress...", Toast.LENGTH_SHORT).show()
+                val code = generateClaimCode()
                 // TODO: send email + code gen
             } else {
                 Toast.makeText(this, "Please enter a message first", Toast.LENGTH_SHORT).show()
@@ -44,4 +45,11 @@ class ClaimObjectActivity : BaseActivity() {
         }
 
     }
+    fun generateClaimCode(): String {
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        return (1..6)
+            .map { chars.random() }
+            .joinToString("")
+    }
+
 }

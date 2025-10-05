@@ -1,5 +1,6 @@
 package com.example.lostandfound.ui.home
 
+import LostItem
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -7,8 +8,8 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lostandfound.R
-import com.example.lostandfound.model.LostItem
 import java.util.Locale
+import coil.load
 
 class LostItemAdapter(
     private val onItemClick: (LostItem) -> Unit
@@ -50,10 +51,20 @@ class LostItemAdapter(
         private val name: TextView = itemView.findViewById(R.id.txtName)
 
         fun bind(item: LostItem) {
-            img.setImageResource(item.getImageRes())
+            if (!item.imageUrl.isNullOrEmpty()) {
+                img.load(item.imageUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_placeholder)
+                    error(R.drawable.ic_broken_image)
+                }
+            } else {
+                img.setImageResource(item.getImageRes())
+            }
+
             name.text = item.getName()
+
             itemView.setOnClickListener { onItemClick(item) }
-            name.setOnClickListener { onItemClick(item) }
         }
+
     }
 }
