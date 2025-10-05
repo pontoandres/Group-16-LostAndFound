@@ -295,10 +295,12 @@ class CameraActivity : AppCompatActivity() {
                 }
                 
                 runOnUiThread {
+                    android.util.Log.d("CameraActivity", "Creating intent with ${suggestions.size} suggestions")
                     val intent = Intent().apply {
                         putExtra(EXTRA_IMAGE_PATH, imageFile.absolutePath)
-                        putExtra(EXTRA_SUGGESTIONS, suggestions.toTypedArray())
+                        putParcelableArrayExtra(EXTRA_SUGGESTIONS, suggestions.toTypedArray())
                     }
+                    android.util.Log.d("CameraActivity", "Intent created, setting result and finishing")
                     setResult(RESULT_OK, intent)
                     finish()
                 }

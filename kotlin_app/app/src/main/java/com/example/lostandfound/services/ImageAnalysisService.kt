@@ -40,45 +40,70 @@ class ImageAnalysisService {
     )
     
     suspend fun analyzeImage(imageFile: File): List<ItemSuggestion> {
+        android.util.Log.d("ImageAnalysisService", "Starting image analysis for: ${imageFile.absolutePath}")
+        
         val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath)
+        if (bitmap == null) {
+            android.util.Log.e("ImageAnalysisService", "Failed to decode bitmap from file")
+            return emptyList()
+        }
+        
         val image = InputImage.fromBitmap(bitmap, 0)
+        android.util.Log.d("ImageAnalysisService", "Created InputImage from bitmap")
         
         val suggestions = mutableListOf<ItemSuggestion>()
         
         try {
             // Analyze with image labeling
+            android.util.Log.d("ImageAnalysisService", "Starting image labeling analysis")
             val labels = suspendCancellableCoroutine<List<com.google.mlkit.vision.label.ImageLabel>> { continuation ->
                 imageLabeler.process(image)
                     .addOnSuccessListener { result ->
+                        android.util.Log.d("ImageAnalysisService", "Image labeling success: ${result.size} labels found")
                         continuation.resume(result)
                     }
                     .addOnFailureListener { exception ->
+                        android.util.Log.e("ImageAnalysisService", "Image labeling failed", exception)
                         continuation.resumeWithException(exception)
                     }
             }
+            android.util.Log.d("ImageAnalysisService", "Processing ${labels.size} labels")
             suggestions.addAll(processLabels(labels))
             
             // Analyze with object detection
+            android.util.Log.d("ImageAnalysisService", "Starting object detection analysis")
             val objects = suspendCancellableCoroutine<List<com.google.mlkit.vision.objects.DetectedObject>> { continuation ->
                 objectDetector.process(image)
                     .addOnSuccessListener { result ->
+                        android.util.Log.d("ImageAnalysisService", "Object detection success: ${result.size} objects found")
                         continuation.resume(result)
                     }
                     .addOnFailureListener { exception ->
+                        android.util.Log.e("ImageAnalysisService", "Object detection failed", exception)
                         continuation.resumeWithException(exception)
                     }
             }
+            android.util.Log.d("ImageAnalysisService", "Processing ${objects.size} objects")
             suggestions.addAll(processObjects(objects))
             
         } catch (e: Exception) {
+            android.util.Log.e("ImageAnalysisService", "Analysis failed", e)
             e.printStackTrace()
         }
         
-        return suggestions.distinctBy { it.title }.sortedByDescending { it.confidence }
+        val finalSuggestions = suggestions.distinctBy { it.title }.sortedByDescending { it.confidence }
+        android.util.Log.d("ImageAnalysisService", "Final suggestions: ${finalSuggestions.size}")
+        finalSuggestions.forEach { suggestion ->
+            android.util.Log.d("ImageAnalysisService", "Suggestion: ${suggestion.title} (${suggestion.confidence})")
+        }
+        
+        return finalSuggestions
     }
     
     private fun processLabels(labels: List<com.google.mlkit.vision.label.ImageLabel>): List<ItemSuggestion> {
+        android.util.Log.d("ImageAnalysisService", "Processing ${labels.size} labels")
         return labels.map { label ->
+            android.util.Log.d("ImageAnalysisService", "Label: ${label.text} (confidence: ${label.confidence})")
             val category = mapLabelToCategory(label.text)
             ItemSuggestion(
                 title = formatTitle(label.text),
@@ -90,8 +115,10 @@ class ImageAnalysisService {
     }
     
     private fun processObjects(objects: List<com.google.mlkit.vision.objects.DetectedObject>): List<ItemSuggestion> {
+        android.util.Log.d("ImageAnalysisService", "Processing ${objects.size} objects")
         return objects.mapNotNull { obj ->
             obj.labels.firstOrNull()?.let { label ->
+                android.util.Log.d("ImageAnalysisService", "Object label: ${label.text} (confidence: ${label.confidence})")
                 val category = mapLabelToCategory(label.text)
                 ItemSuggestion(
                     title = formatTitle(label.text),

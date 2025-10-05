@@ -34,6 +34,8 @@ class ReportLostItemActivity : AppCompatActivity() {
                 
                 android.util.Log.d("ReportLostItem", "Image path: $imagePath")
                 android.util.Log.d("ReportLostItem", "Suggestions count: ${suggestions?.size ?: 0}")
+                android.util.Log.d("ReportLostItem", "Intent data: ${result.data}")
+                android.util.Log.d("ReportLostItem", "Intent extras: ${result.data?.extras}")
                 
                 if (imagePath != null) {
                     val imageFile = File(imagePath)
@@ -191,9 +193,21 @@ class ReportLostItemActivity : AppCompatActivity() {
             } else {
                 binding.layoutAdditionalSuggestions.visibility = View.GONE
             }
+            
+            // Adjust description label position to be below suggestions
+            val layoutParams = binding.txtDescriptionLabel.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            layoutParams.topToBottom = binding.layoutSuggestions.id
+            layoutParams.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+            binding.txtDescriptionLabel.layoutParams = layoutParams
         } else {
             android.util.Log.d("ReportLostItem", "No suggestions to show")
             binding.layoutSuggestions.visibility = View.GONE
+            
+            // Reset description label position to be below image card
+            val layoutParams = binding.txtDescriptionLabel.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            layoutParams.topToBottom = binding.cardImageUpload.id
+            layoutParams.topToTop = androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.UNSET
+            binding.txtDescriptionLabel.layoutParams = layoutParams
         }
     }
     
