@@ -29,8 +29,17 @@ class LostItemsRepositoryImpl : LostItemsRepository {
         val user = supabase.auth.currentUserOrNull()
             ?: error("No hay sesión activa")
 
-        // 🔴 IMPORTANTE: ignoramos imageFile por ahora.
-        // Solo insertamos el registro (como cuando te funcionaba sin imagen).
+        Log.d(TAG, "Creating lost item for user: ${user.id}")
+        
+        // Upload image if provided
+        val imageUrl = if (imageFile != null) {
+            Log.d(TAG, "Uploading image: ${imageFile.absolutePath}")
+            uploadImage(imageFile, user.id).getOrThrow()
+        } else {
+            Log.d(TAG, "No image provided")
+            null
+        }
+        
         val payload = mapOf(
             "user_id" to user.id,
             "title" to title.trim(),
@@ -38,11 +47,13 @@ class LostItemsRepositoryImpl : LostItemsRepository {
             "location" to location?.trim(),
             "category" to category?.trim(),
             "lost_at" to lostAt,
-            "image_url" to null // sin imagen por ahora
+            "image_url" to imageUrl,
+            "created_at" to java.time.Instant.now().toString()
         )
 
+        Log.d(TAG, "Inserting data: $payload")
         supabase.postgrest["lost_items"].insert(payload)
-        Log.d(TAG, "Insert OK en lost_items (sin imagen)")
+        Log.d(TAG, "Insert OK en lost_items")
 
         // Devolvemos un objeto local para refrescar UI
         LostItem(
@@ -52,7 +63,7 @@ class LostItemsRepositoryImpl : LostItemsRepository {
             description = description?.trim(),
             location = location?.trim(),
             category = category?.trim(),
-            imageUrl = null,
+            imageUrl = imageUrl,
             lostAt = lostAt,
             createdAt = java.time.Instant.now().toString()
         )
@@ -60,16 +71,25 @@ class LostItemsRepositoryImpl : LostItemsRepository {
 
     // La dejamos lista por si luego volvemos a habilitar subir imagen
     override suspend fun uploadImage(imageFile: File, userId: String): Result<String> = runCatching {
+        Log.d(TAG, "Uploading image to bucket: $BUCKET_NAME")
         val bucket = supabase.storage.from(BUCKET_NAME)
         val path = "lost/$userId/${System.currentTimeMillis()}.jpg"
+        
+        Log.d(TAG, "Upload path: $path")
         bucket.upload(path, imageFile.readBytes()) {
             contentType = ContentType.Image.JPEG
             upsert = true
         }
-        bucket.publicUrl(path)
+        
+        val publicUrl = bucket.publicUrl(path)
+        Log.d(TAG, "Upload successful, public URL: $publicUrl")
+        publicUrl
     }
 
     override suspend fun getLostItems(): Result<List<LostItem>> = runCatching {
-        supabase.postgrest["lost_items"].select().decodeList<LostItem>()
+        Log.d(TAG, "Fetching lost items from database")
+        val items = supabase.postgrest["lost_items"].select().decodeList<LostItem>()
+        Log.d(TAG, "Retrieved ${items.size} lost items")
+        items
     }
 }
