@@ -32,10 +32,10 @@ class HomeActivity : BaseActivity() {
 
         adapter = LostItemAdapter { item ->
                 val intent = Intent(this, com.example.lostandfound.ui.detail.ItemDetailActivity::class.java)
-                .putExtra("name", item.title)
+                .putExtra("name", item.getName())
                 .putExtra("description", item.description)
-                .putExtra("postedBy", item.postedBy)
-                .putExtra("imageUrl", item.image_url)
+                .putExtra("postedBy", item.getPostedBy())
+                .putExtra("imageRes", item.getImageRes())
                 .putExtra("isOwner", true) // por ahora visible; cambia a true/false para probar
 
             startActivity(intent)
@@ -49,59 +49,83 @@ class HomeActivity : BaseActivity() {
         /*val items = listOf(
             LostItem(
                 id = "umbrella1",
-                name = "Umbrella",
+                userId = "user1",
+                title = "Umbrella",
                 description = "This object was found in room 606 of the ML building on Monday. Chat with me to coordinate delivery.",
-                postedBy = "Martin",
-                imageRes = R.drawable.ic_umbrella
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Umbrella",
+                legacyPostedBy = "Martin",
+                legacyImageRes = R.drawable.ic_umbrella
             ),
             LostItem(
                 id = "laptop1",
-                name = "Laptop",
+                userId = "user2",
+                title = "Laptop",
                 description = "Black Dell laptop found at the cafeteria.",
-                postedBy = "Laura",
-                imageRes = R.drawable.ic_laptop
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Laptop",
+                legacyPostedBy = "Laura",
+                legacyImageRes = R.drawable.ic_laptop
             ),
             LostItem(
                 id = "wallet1",
-                name = "Wallet",
+                userId = "user3",
+                title = "Wallet",
                 description = "Brown leather wallet found in the library.",
-                postedBy = "Andres",
-                imageRes = R.drawable.ic_wallet
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Wallet",
+                legacyPostedBy = "Andres",
+                legacyImageRes = R.drawable.ic_wallet
             ),
             LostItem(
                 id = "key1",
-                name = "Key",
+                userId = "user4",
+                title = "Key",
                 description = "Single house key found near the main entrance.",
-                postedBy = "Sofia",
-                imageRes = R.drawable.ic_key
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Key",
+                legacyPostedBy = "Sofia",
+                legacyImageRes = R.drawable.ic_key
             ),
             LostItem(
                 id = "headphones1",
-                name = "Headphones",
+                userId = "user5",
+                title = "Headphones",
                 description = "Orange headphones left in the gym.",
-                postedBy = "Carlos",
-                imageRes = R.drawable.ic_headphones
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Headphones",
+                legacyPostedBy = "Carlos",
+                legacyImageRes = R.drawable.ic_headphones
             ),
             LostItem(
                 id = "watch1",
-                name = "Watch",
+                userId = "user6",
+                title = "Watch",
                 description = "Analog watch found in classroom 203.",
-                postedBy = "Paula",
-                imageRes = R.drawable.ic_watch
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Watch",
+                legacyPostedBy = "Paula",
+                legacyImageRes = R.drawable.ic_watch
             ),
             LostItem(
                 id = "glasses1",
-                name = "Glasses",
+                userId = "user7",
+                title = "Glasses",
                 description = "Pair of glasses found in the library study area.",
-                postedBy = "Juan",
-                imageRes = R.drawable.ic_glasses
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Glasses",
+                legacyPostedBy = "Juan",
+                legacyImageRes = R.drawable.ic_glasses
             ),
             LostItem(
                 id = "backpack1",
-                name = "Backpack",
+                userId = "user8",
+                title = "Backpack",
                 description = "Orange backpack left in the parking lot.",
-                postedBy = "Maria",
-                imageRes = R.drawable.ic_backpack
+                createdAt = "2024-01-01T00:00:00Z",
+                legacyName = "Backpack",
+                legacyPostedBy = "Maria",
+                legacyImageRes = R.drawable.ic_backpack
             )
         )*/
 

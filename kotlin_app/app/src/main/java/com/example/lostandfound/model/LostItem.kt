@@ -2,20 +2,37 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
-@OptIn(ExperimentalSerializationApi::class)
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+
 @Serializable
 data class LostItem(
     val id: String,
-    val user_id: String,
+    @SerialName("user_id")
+    val userId: String,
     val title: String,
-    val description: String,
-    val place: String? = null,
-    val lost_date: String? = null,
-    val category: String? = null,
-    val image_url: String? = null,
-    val status: String? = null,
-    val created_at: String? = null,
+    val description: String? = null,
     val location: String? = null,
-    val lost_at: String? = null,
-    val postedBy: String? = null
-)
+    val category: String? = null,
+    @SerialName("image_url")
+    val imageUrl: String? = null,
+    @SerialName("lost_at")
+    val lostAt: String? = null,
+    @SerialName("created_at")
+    val createdAt: String,
+    @SerialName("is_claimed")
+    val isClaimed: Boolean = false,
+    @SerialName("claimed_by_id")
+    val claimedById: String? = null,
+    @SerialName("claimed_at")
+    val claimedAt: String? = null,
+    // Legacy fields for backward compatibility
+    val legacyName: String? = null,
+    val legacyPostedBy: String? = null,
+    val legacyImageRes: Int? = null
+) {
+    // Computed properties for backward compatibility
+    fun getName(): String = legacyName ?: title
+    fun getPostedBy(): String = legacyPostedBy ?: userId
+    fun getImageRes(): Int = legacyImageRes ?: 0
+}

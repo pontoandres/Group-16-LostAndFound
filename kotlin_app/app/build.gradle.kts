@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -19,6 +20,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
     }
 
     buildTypes {
@@ -68,6 +70,7 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.4"))
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:storage-kt")
 
     // Ktor client para Android (requerido por supabase-kt 3.x)
     implementation("io.ktor:ktor-client-android:3.3.0")
@@ -78,6 +81,13 @@ dependencies {
     implementation("androidx.browser:browser") {
         version { strictly("1.8.0") }
     }
+
+    // Image handling
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    
+    // ML Kit for image analysis
+    implementation("com.google.mlkit:image-labeling:17.0.8")
+    implementation("com.google.mlkit:object-detection:17.0.1")
     //Lightweight image loader
     implementation("io.coil-kt:coil:2.6.0")
 }

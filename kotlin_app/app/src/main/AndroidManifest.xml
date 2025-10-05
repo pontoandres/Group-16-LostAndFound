@@ -4,6 +4,12 @@
     <!-- Permisos -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Leer fotos SÓLO si se va a abrir galería (no para tomar foto) -->
+    <!-- Android 13+ -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <!-- Android 12 y menores -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
 
     <!-- Declarar la feature de cámara como no requerida para evitar el warning -->
     <uses-feature
@@ -24,7 +30,8 @@
         <!-- Launcher -->
         <activity
             android:name=".ui.login.LoginActivity"
-            android:exported="true">
+            android:exported="true"
+            android:theme="@style/Theme.LostAndFound">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
