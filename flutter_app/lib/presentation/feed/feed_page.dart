@@ -15,8 +15,50 @@ class FeedPage extends StatelessWidget {
   }
 }
 
-class _FeedBody extends StatelessWidget {
+class _FeedBody extends StatefulWidget {
   const _FeedBody();
+
+  @override
+  State<_FeedBody> createState() => _FeedBodyState();
+}
+
+class _FeedBodyState extends State<_FeedBody> {
+  bool _warningShown = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowNightWarning());
+  }
+
+  void _maybeShowNightWarning() {
+    if (_warningShown) return;
+    final now = DateTime.now();
+    if (now.hour >= 18) {
+      _warningShown = true;
+      final messenger = ScaffoldMessenger.of(context);
+
+      messenger.showMaterialBanner(
+        MaterialBanner(
+          content: const Text('Careful! At night it’s easier to lose your belongings.'),
+          leading: const Icon(Icons.nightlight_round),
+          actions: [
+            TextButton(
+              onPressed: () => messenger.hideCurrentMaterialBanner(),
+              child: const Text('OK'),
+            ),
+          ],
+          backgroundColor: Colors.amber.shade100,
+        ),
+      );
+
+      Future.delayed(const Duration(seconds: 6), () {
+        if (mounted) {
+          ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +101,8 @@ class _FeedBody extends StatelessWidget {
                         : const Icon(Icons.search),
                     title: Text(it.title),
                     subtitle: Text([
-                      if (it.location != null && it.location!.isNotEmpty)
-                        '📍 ${it.location}',
-                      if (it.category != null && it.category!.isNotEmpty)
-                        '🏷️ ${it.category}',
+                      if (it.location != null && it.location!.isNotEmpty) '📍 ${it.location}',
+                      if (it.category != null && it.category!.isNotEmpty) '🏷️ ${it.category}',
                       '🕒 ${it.createdAt.toLocal()}',
                     ].where((e) => e.isNotEmpty).join(' · ')),
                     onTap: () {
@@ -96,5 +136,3 @@ class _FeedBody extends StatelessWidget {
     );
   }
 }
-
-
