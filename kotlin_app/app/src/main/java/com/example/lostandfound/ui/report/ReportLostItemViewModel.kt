@@ -97,7 +97,7 @@ class ReportLostItemViewModel : ViewModel() {
                 }
                 val lostAt = _state.value?.lostDate?.let { dateFormat.format(it) }
 
-                repository.createLostItem(
+                val result = repository.createLostItem(
                     title = title.trim(),
                     description = description.trim().takeIf { it.isNotEmpty() },
                     location = location.trim().takeIf { it.isNotEmpty() },
@@ -106,10 +106,20 @@ class ReportLostItemViewModel : ViewModel() {
                     imageFile = _state.value?.imageFile
                 )
 
-                _state.value = _state.value?.copy(
-                    isLoading = false,
-                    success = true,
-                    error = null
+                result.fold(
+                    onSuccess = { lostItem ->
+                        _state.value = _state.value?.copy(
+                            isLoading = false,
+                            success = true,
+                            error = null
+                        )
+                    },
+                    onFailure = { error ->
+                        _state.value = _state.value?.copy(
+                            isLoading = false,
+                            error = error.message ?: "Failed to create lost item"
+                        )
+                    }
                 )
 
             } catch (e: Exception) {
