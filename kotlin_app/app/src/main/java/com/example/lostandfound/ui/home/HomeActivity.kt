@@ -40,6 +40,7 @@ class HomeActivity : BaseActivity() {
                 .putExtra("imageRes", item.getImageRes())
                 // si tienes sesión, calcula dueño real: currentUserId == item.userId
                 .putExtra("isOwner", false)
+                .putExtra("imageUrl", item.imageUrl)
 
             startActivity(intent)
         }
