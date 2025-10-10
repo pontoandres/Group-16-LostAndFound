@@ -29,8 +29,19 @@ class LostItemsRepositoryImpl : LostItemsRepository {
         val user = supabase.auth.currentUserOrNull()
             ?: error("No hay sesión activa")
 
-        // 🔴 IMPORTANTE: ignoramos imageFile por ahora.
-        // Solo insertamos el registro (como cuando te funcionaba sin imagen).
+        // 1) Subir imagen si existe
+        val imageUrl: String? = if (imageFile != null && imageFile.exists()) {
+            // usamos uploadImage()
+            uploadImage(imageFile, user.id).getOrElse { e ->
+                // Si falla la imagen, lanza error o deja null según tu UX.
+                // Aquí prefiero lanzar para que el usuario sepa que falló subirla.
+                throw IllegalStateException("No se pudo subir la imagen: ${e.message}", e)
+            }
+        } else {
+            null
+        }
+
+        // 2) Insertar el registro con image_url (si subió)
         val payload = mapOf(
             "user_id" to user.id,
             "title" to title.trim(),
@@ -38,25 +49,26 @@ class LostItemsRepositoryImpl : LostItemsRepository {
             "location" to location?.trim(),
             "category" to category?.trim(),
             "lost_at" to lostAt,
-            "image_url" to null // sin imagen por ahora
+            "image_url" to imageUrl // ← ahora sí guardamos la URL pública
         )
 
         supabase.postgrest["lost_items"].insert(payload)
-        Log.d(TAG, "Insert OK en lost_items (sin imagen)")
+        Log.d(TAG, "Insert OK en lost_items (image_url=${imageUrl ?: "null"})")
 
-        // Devolvemos un objeto local para refrescar UI
+        // Devuelve un objeto local para refrescar UI
         LostItem(
-            id = UUID.randomUUID().toString(),
+            id = java.util.UUID.randomUUID().toString(),
             userId = user.id,
             title = title.trim(),
             description = description?.trim(),
             location = location?.trim(),
             category = category?.trim(),
-            imageUrl = null,
+            imageUrl = imageUrl,
             lostAt = lostAt,
             createdAt = java.time.Instant.now().toString()
         )
     }
+
 
     // La dejamos lista por si luego volvemos a habilitar subir imagen
     override suspend fun uploadImage(imageFile: File, userId: String): Result<String> = runCatching {
