@@ -1,84 +1,35 @@
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../widgets/top_bar.dart';
-import '../widgets/debug_nav.dart';
-import '../../viewmodels/feed/feed_viewmodel.dart';
-import '../../routes/app_routes.dart';
-import '../../services/email_service.dart';
+import '../widgets/debug_nav.dart'; 
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final msg = TextEditingController(text: 'Hola, este es mi objeto');
-    final arg = ModalRoute.of(context)?.settings.arguments;
-    final item = arg is FeedItem ? arg : null;
+    final msg = TextEditingController(text: 'Hola este es mi objeto');
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Claim Object'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: const [DebugNavButton()],
+      appBar: const TopBar(
+        title: 'Claim Object',
+        actions: [DebugNavButton()], 
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (item != null) Text('Reclamando: ${item.title}'),
-            const SizedBox(height: 12),
             const Text('Enviar correo'),
             const SizedBox(height: 8),
             TextField(
               controller: msg,
               maxLines: 6,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-              ),
+              decoration: const InputDecoration(),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () async {
-                if (item == null) return;
-
-                final client = Supabase.instance.client;
-                final currentUser = client.auth.currentUser;
-
-               
-                final userRes = await client
-                    .from('profiles')
-                    .select('email')
-                    .eq('id', item.userId) 
-                    .maybeSingle();
-
-                final email = userRes?['email'];
-
-                
-                if (email != null && currentUser?.email != null) {
-                  await EmailService.sendEmail(
-                    to: email,
-                    subject: 'Reclamo de objeto perdido',
-                    message: msg.text,
-                    replyTo: currentUser!.email!,
-                  );
-                }
-
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Correo enviado correctamente')),
-                  );
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    AppRoutes.feed,
-                    (route) => false,
-                  );
-                }
-              },
-              child: const Text('Send'),
+              onPressed: () {},
+              child: const Text('Send '),
             ),
           ],
         ),
@@ -86,5 +37,3 @@ class ClaimObjectScreen extends StatelessWidget {
     );
   }
 }
-
-
