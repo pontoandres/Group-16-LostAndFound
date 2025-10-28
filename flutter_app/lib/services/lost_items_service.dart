@@ -1,7 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'dart:typed_data';                 
-import 'package:mime/mime.dart' as mime;  
-
+import 'dart:typed_data';
+import 'package:mime/mime.dart' as mime;
 
 class LostItem {
   final String id;
@@ -29,21 +28,23 @@ class LostItem {
   });
 
   factory LostItem.fromMap(Map<String, dynamic> m) => LostItem(
-    id: m['id'],
-    userId: m['user_id'],
-    title: m['title'],
-    description: m['description'],
-    category: m['category'],
-    location: m['location'],
-    lostAt: m['lost_at'] != null ? DateTime.parse(m['lost_at']) : null,
-    imageUrl: m['image_url'],
-    status: m['status'] ?? 'open',
-    createdAt: DateTime.parse(m['created_at']),
-  );
+        id: m['id'],
+        userId: m['user_id'],
+        title: m['title'],
+        description: m['description'],
+        category: m['category'],
+        location: m['location'],
+        lostAt: m['lost_at'] != null ? DateTime.parse(m['lost_at']) : null,
+        imageUrl: m['image_url'],
+        status: m['status'] ?? 'open',
+        createdAt: DateTime.parse(m['created_at']),
+      );
 }
 
 class LostItemsService {
   final _client = Supabase.instance.client;
+
+  LostItemsService(); // <= ESTO ES LO ÚNICO QUE SE AÑADIÓ para evitar el error de compilación
 
   Future<LostItem> create({
     required String title,
@@ -85,7 +86,6 @@ class LostItemsService {
     return (rows as List).map((e) => LostItem.fromMap(e)).toList();
   }
 
-  // (Opcional) stream en tiempo real
   RealtimeChannel subscribe(void Function(LostItem) onInsert) {
     final ch = _client
         .channel('public:lost_items')
@@ -101,26 +101,26 @@ class LostItemsService {
         .subscribe();
     return ch;
   }
-  
+
   Future<String> uploadImage({
-  required Uint8List bytes,
-  required String userId,
-  String? fileName,
-}) async {
-  final now = DateTime.now().millisecondsSinceEpoch;
-  final name = fileName ?? 'img_$now.jpg';
-  final path = 'lost/$userId/$now-$name';
+    required Uint8List bytes,
+    required String userId,
+    String? fileName,
+  }) async {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final name = fileName ?? 'img_$now.jpg';
+    final path = 'lost/$userId/$now-$name';
 
-  final contentType = mime.lookupMimeType('', headerBytes: bytes) ?? 'image/jpeg';
+    final contentType = mime.lookupMimeType('', headerBytes: bytes) ?? 'image/jpeg';
 
-  await Supabase.instance.client.storage
-      .from('lost-items')
-      .uploadBinary(
-        path,
-        bytes,
-        fileOptions: FileOptions(contentType: contentType),
-      );
+    await _client.storage
+        .from('lost-items')
+        .uploadBinary(
+          path,
+          bytes,
+          fileOptions: FileOptions(contentType: contentType),
+        );
 
-  return Supabase.instance.client.storage.from('lost-items').getPublicUrl(path);
-}
+    return _client.storage.from('lost-items').getPublicUrl(path);
+  }
 }

@@ -67,6 +67,10 @@ class _RegisterPageContent extends StatelessWidget {
               const Text("University ID Number", style: _labelStyle),
               const SizedBox(height: 5),
               _buildTextField(vm.uniIdController, hint: "Your university code"),
+              const SizedBox(height: 20),
+              const Text("Faculty", style: _labelStyle),
+              const SizedBox(height: 5),
+              _buildTextField(vm.facultyController, hint: "e.g. Ingeniería, Derecho, Economía"),
               const SizedBox(height: 35),
               SizedBox(
                 width: double.infinity,
@@ -75,12 +79,8 @@ class _RegisterPageContent extends StatelessWidget {
                   onPressed: vm.isLoading
                       ? null
                       : () async {
-                          print('Botón Create Account presionado');
                           final success = await vm.register();
-                          print('Resultado de vm.register(): $success');
-
                           if (success && context.mounted) {
-                            print('Navegando a /login');
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(content: Text("Account created. Check your email.")),
                             );
@@ -88,7 +88,6 @@ class _RegisterPageContent extends StatelessWidget {
                               Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
                             });
                           } else if (vm.errorMessage != null) {
-                            print('Error mostrado al usuario: ${vm.errorMessage}');
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(vm.errorMessage!)),
                             );
@@ -107,8 +106,7 @@ class _RegisterPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller,
-      {required String hint, bool obscure = false}) {
+  Widget _buildTextField(TextEditingController controller, {required String hint, bool obscure = false}) {
     return TextField(
       controller: controller,
       obscureText: obscure,
@@ -136,16 +134,9 @@ const TextStyle _labelStyle = TextStyle(
 final ButtonStyle _buttonStyle = ElevatedButton.styleFrom(
   backgroundColor: const Color(0xFFE49957),
   foregroundColor: const Color(0xFF2D3A3A),
-  textStyle: const TextStyle(
-    fontSize: 16,
-    fontWeight: FontWeight.w600,
-  ),
+  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
   shape: RoundedRectangleBorder(
     borderRadius: BorderRadius.circular(8),
-    side: const BorderSide(
-      color: Color(0xFF714E1E),
-      width: 2,
-    ),
+    side: const BorderSide(color: Color(0xFF714E1E), width: 2),
   ),
 );
-

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
@@ -65,7 +66,34 @@ class _FeedBodyState extends State<_FeedBody> {
     final vm = context.watch<FeedViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Goatfound')),
+      appBar: AppBar(
+        title: const Text('Goatfound'),
+        backgroundColor: Colors.redAccent,
+        leading: Builder(
+          builder: (context) => IconButton(
+            icon: const Icon(Icons.menu, color: Colors.white, size: 30),
+            onPressed: () => Scaffold.of(context).openDrawer(),
+          ),
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blueGrey),
+              child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
+            ),
+            ListTile(
+              leading: const Icon(Icons.bar_chart),
+              title: const Text('Statistics'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
+              },
+            ),
+          ],
+        ),
+      ),
       body: RefreshIndicator(
         onRefresh: () => context.read<FeedViewModel>().load(),
         child: Builder(

@@ -10,6 +10,7 @@ bool _isEmailAllowed(String email) {
 class SupabaseAuthService {
   final SupabaseClient _client = Supabase.instance.client;
 
+  // -------------------- LOGIN --------------------
   Future<AuthResponse> signInWithEmailAndPassword(String email, String password) async {
     final trimmedEmail = email.trim();
 
@@ -29,18 +30,21 @@ class SupabaseAuthService {
     }
   }
 
+  // -------------------- REGISTRO --------------------
   Future<AuthResponse> signUpWithEmailAndPassword(
     String email,
     String password,
     String name,
     String uniId,
+    String faculty,
   ) async {
     final trimmedEmail = email.trim();
 
     if (!_isEmailAllowed(trimmedEmail)) {
       throw AuthException('Dominio de correo no permitido');
     }
-    if (password.isEmpty || name.isEmpty || uniId.isEmpty) {
+
+    if (password.isEmpty || name.isEmpty || uniId.isEmpty || faculty.isEmpty) {
       throw Exception('Todos los campos son obligatorios');
     }
 
@@ -55,11 +59,12 @@ class SupabaseAuthService {
         throw AuthException('No se pudo crear el usuario');
       }
 
-      // Crea/actualiza el perfil
+      // Guarda o actualiza el perfil con la facultad incluida
       await _client.from('profiles').upsert({
         'id': userId,
         'name': name,
         'university_id': uniId,
+        'faculty': faculty,
       });
 
       return response;
@@ -70,6 +75,7 @@ class SupabaseAuthService {
     }
   }
 
+  // -------------------- RESET PASSWORD --------------------
   Future<void> resetPassword(String email) async {
     final trimmedEmail = email.trim();
 
@@ -89,7 +95,9 @@ class SupabaseAuthService {
     }
   }
 
+  // -------------------- LOGOUT --------------------
   Future<void> signOut() async => _client.auth.signOut();
 
+  // -------------------- CURRENT USER --------------------
   User? getCurrentUser() => _client.auth.currentUser;
 }
