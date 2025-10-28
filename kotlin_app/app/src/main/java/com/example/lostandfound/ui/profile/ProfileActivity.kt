@@ -22,6 +22,9 @@ class ProfileActivity : AppCompatActivity() {
 
     private fun setupClickListeners() {
         binding.btnBack.setOnClickListener {
+            val intent = Intent(this, com.example.lostandfound.ui.home.HomeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
             finish()
         }
 

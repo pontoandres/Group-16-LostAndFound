@@ -1,22 +1,32 @@
 package com.example.lostandfound.ui.history
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lostandfound.R
+import com.example.lostandfound.databinding.ActivityHistoryBinding
 import com.example.lostandfound.model.HistoryItem
 import com.example.lostandfound.ui.common.BaseActivity
 
 class HistoryActivity: BaseActivity() {
+
+    private lateinit var binding: ActivityHistoryBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_history)
+        binding = ActivityHistoryBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         setupToolbar()
 
-        val btnBack = findViewById<Button>(R.id.btnBack)
+        val btnBack = binding.btnBack
         btnBack.setOnClickListener {
+            val intent = Intent(this, com.example.lostandfound.ui.home.HomeActivity::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
             finish()
         }
 
@@ -40,7 +50,7 @@ class HistoryActivity: BaseActivity() {
             )
         )
 
-        val recycler = findViewById<RecyclerView>(R.id.rvHistory)
+        val recycler = binding.rvHistory
         recycler.layoutManager = LinearLayoutManager(this)
         recycler.adapter = HistoryAdapter(historyList)
 

@@ -30,7 +30,7 @@ import com.google.android.material.navigation.NavigationView
  *
  * Asegúrate de usar esos IDs en tus layouts donde aplique.
  */
-abstract class BaseActivity : AppCompatActivity() {
+abstract class  BaseActivity : AppCompatActivity() {
 
     protected lateinit var drawerLayout: DrawerLayout
     protected lateinit var navigationView: NavigationView

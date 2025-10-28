@@ -13,15 +13,20 @@
     import coil.load
     import android.view.View
     import android.widget.Toast
+    import com.example.lostandfound.databinding.ActivityItemDetailBinding
 
     class ItemDetailActivity : AppCompatActivity() {
 
+        private lateinit var binding: ActivityItemDetailBinding
+
         override fun onCreate(savedInstanceState: Bundle?) {
             super.onCreate(savedInstanceState)
-            setContentView(R.layout.activity_item_detail)
+            binding = ActivityItemDetailBinding.inflate(layoutInflater)
+            val view = binding.root
+            setContentView(view)
 
             // Toolbar with back
-            val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+            val toolbar = binding.topAppBar
             toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
             // Extras
@@ -33,11 +38,11 @@
             val imageUrl = intent.getStringExtra("imageUrl")
 
             // Bind UI
-            findViewById<TextView>(R.id.txtItemName).text = name
-            findViewById<TextView>(R.id.txtPostedBy).text = "Posted by $postedBy"
-            findViewById<TextView>(R.id.txtDescription).text = desc
+            binding.txtItemName.text = name
+            binding.txtPostedBy.text = "Posted by $postedBy"
+            binding.txtDescription.text = desc
 
-            val img = findViewById<ImageView>(R.id.imgItem)
+            val img = binding.imgItem
             if (!imageUrl.isNullOrEmpty()) {
                 img.load(imageUrl) {
                     crossfade(true)
@@ -49,7 +54,7 @@
             }
 
             // Claim
-            findViewById<com.google.android.material.button.MaterialButton>(R.id.btnClaim)
+            binding.btnClaim
                 .setOnClickListener {
                     val intent = Intent(this, ClaimObjectActivity::class.java).apply {
                         putExtra("name", name)
@@ -61,12 +66,12 @@
                 }
 
             // Owner only section
-            val ownerSection = findViewById<LinearLayout>(R.id.ownerSection)
+            val ownerSection = binding.ownerSection
             ownerSection.visibility = if (isOwner) android.view.View.VISIBLE else android.view.View.GONE
 
-            findViewById<com.google.android.material.button.MaterialButton>(R.id.btnVerify)
+            binding.btnVerify
                 .setOnClickListener {
-                    val code = findViewById<TextInputEditText>(R.id.edtCode).text?.toString().orEmpty()
+                    val code = binding.edtCode.text?.toString().orEmpty()
                     // TODO: validar código (prototipo: solo mostrar toast)
                     Toast.makeText(this, "Feature in progress… Code: $code", Toast.LENGTH_SHORT).show()
                 }
