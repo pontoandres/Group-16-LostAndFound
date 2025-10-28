@@ -4,13 +4,14 @@ import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../../services/email_service.dart';
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final msg = TextEditingController(text: 'Hola este es mi objeto');
+    final msg = TextEditingController(text: 'Hola, este es mi objeto');
     final arg = ModalRoute.of(context)?.settings.arguments;
     final item = arg is FeedItem ? arg : null;
 
@@ -45,30 +46,30 @@ class ClaimObjectScreen extends StatelessWidget {
                 if (item == null) return;
 
                 final client = Supabase.instance.client;
+                final currentUser = client.auth.currentUser;
 
-                // Aquí asumimos que guardas el email del dueño en Supabase en la tabla profiles
+               
                 final userRes = await client
                     .from('profiles')
                     .select('email')
-                    .eq('id', item.id) // ojo: aquí debe ser user_id, no id del item
+                    .eq('id', item.userId) 
                     .maybeSingle();
 
                 final email = userRes?['email'];
 
-                if (email != null) {
-                  await client.functions.invoke(
-                    'send-claim-email',
-                    body: {
-                      'to': email,
-                      'subject': 'Reclamo de objeto perdido',
-                      'message': msg.text,
-                    },
+                
+                if (email != null && currentUser?.email != null) {
+                  await EmailService.sendEmail(
+                    to: email,
+                    subject: 'Reclamo de objeto perdido',
+                    message: msg.text,
+                    replyTo: currentUser!.email!,
                   );
                 }
 
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Correo enviado')),
+                    const SnackBar(content: Text('Correo enviado correctamente')),
                   );
                   Navigator.pushNamedAndRemoveUntil(
                     context,
