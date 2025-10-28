@@ -1,71 +1,39 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../services/lost_items_service.dart';
 
 class LostReportViewModel extends ChangeNotifier {
-  // --- Controllers para el formulario ---
   final titleCtrl = TextEditingController();
   final descriptionCtrl = TextEditingController();
   final locationCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
 
-  // --- Estado ---
-  Uint8List? imageBytes;         // para el preview
-  String? imageUrl;              // url pública en storage
+  Uint8List? imageBytes;
+  String? imageUrl;
   DateTime? lostAt = DateTime.now();
 
   bool isLoading = false;
   String? error;
 
-  final SupabaseClient _client = Supabase.instance.client;
+  final _client = Supabase.instance.client;
+  final _service = LostItemsService();
 
-  // -----------------------------------------------
-  // Seleccionar imagen (galería o cámara)
-  // -----------------------------------------------
-Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
-  final picker = ImagePicker();
-  final XFile? picked = await picker.pickImage(source: source, maxWidth: 1024);
-  if (picked != null) {
-    imageBytes = await picked.readAsBytes();
-    notifyListeners();
-  }
-}
-
-
-  // -----------------------------------------------
-  // Subir imagen al Storage y devolver URL pública
-  // -----------------------------------------------
-  Future<String?> _uploadImage({
-    required Uint8List bytes,
-    required String userId,
-  }) async {
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final path = 'lost/$userId/$now.jpg';
-
-    await _client.storage
-        .from('lost-items')
-        .uploadBinary(path, bytes, fileOptions: const FileOptions(
-          contentType: 'image/jpeg',
-          upsert: true,
-        ));
-
-    // URL pública
-    return _client.storage.from('lost-items').getPublicUrl(path);
+  Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
+    final picker = ImagePicker();
+    final XFile? picked = await picker.pickImage(source: source, maxWidth: 1024);
+    if (picked != null) {
+      imageBytes = await picked.readAsBytes();
+      notifyListeners();
+    }
   }
 
-  // -----------------------------------------------
-  // Cambiar la fecha en el formulario
-  // -----------------------------------------------
   void setLostAt(DateTime d) {
     lostAt = d;
     notifyListeners();
   }
 
-  // -----------------------------------------------
-  // Enviar el reporte (insert en lost_items)
-  // -----------------------------------------------
   Future<bool> submit() async {
     final user = _client.auth.currentUser;
     if (user == null) {
@@ -86,37 +54,23 @@ Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
       error = null;
       notifyListeners();
 
-      // Subir imagen si existe
-      String? url;
       if (imageBytes != null) {
-        url = await _uploadImage(bytes: imageBytes!, userId: user.id);
+        imageUrl = await _service.uploadImage(bytes: imageBytes!, userId: user.id);
       }
 
-      // Insertar registro
-      await _client.from('lost_items').insert({
-        'user_id': user.id,
-        'title': title,
-        'description': descriptionCtrl.text.trim().isEmpty
-            ? null
-            : descriptionCtrl.text.trim(),
-        'location': locationCtrl.text.trim().isEmpty
-            ? null
-            : locationCtrl.text.trim(),
-        'category': categoryCtrl.text.trim().isEmpty
-            ? null
-            : categoryCtrl.text.trim(),
-        'image_url': url,
-        'lost_at': (lostAt ?? DateTime.now()).toIso8601String(),
-      });
+      await _service.create(
+        title: title,
+        description: descriptionCtrl.text,
+        category: categoryCtrl.text,
+        location: locationCtrl.text,
+        lostAt: lostAt,
+        imageUrl: imageUrl,
+      );
 
-      // Limpiar formulario
       _clear();
       return true;
-    } on PostgrestException catch (e) {
-      error = e.message;
-      return false;
     } catch (e) {
-      error = 'Error inesperado: $e';
+      error = 'Error: $e';
       return false;
     } finally {
       isLoading = false;

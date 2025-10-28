@@ -1,3 +1,5 @@
+// Archivo: lib/routes/app_routes.dart
+
 import 'package:flutter/material.dart';
 
 import '../presentation/login/login_page.dart';
@@ -13,6 +15,7 @@ import '../presentation/history/history_screen.dart';
 import '../presentation/camera/camera_screen.dart';
 import '../presentation/config/config_screen.dart';
 import '../presentation/reset_password/reset_password_page.dart';
+import '../presentation/statistics/reports_by_faculty_page.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -29,6 +32,7 @@ class AppRoutes {
   static const String camera = '/camera';
   static const String config = '/config';
   static const String resetPassword = '/reset_password';
+  static const String reportsByFaculty = '/reports_by_faculty';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -45,6 +49,7 @@ class AppRoutes {
       camera: (_) => const CameraScreen(),
       config: (_) => const ConfigScreen(),
       resetPassword: (_) => const ResetPasswordPage(),
+      reportsByFaculty: (_) => const ReportsByFacultyPage(),
     };
   }
 }

@@ -7,6 +7,7 @@ class RegisterViewModel extends ChangeNotifier {
   final passwordController = TextEditingController();
   final nameController = TextEditingController();
   final uniIdController = TextEditingController();
+  final facultyController = TextEditingController();
 
   final SupabaseAuthService _authService = SupabaseAuthService();
 
@@ -18,12 +19,7 @@ class RegisterViewModel extends ChangeNotifier {
     final password = passwordController.text.trim();
     final name = nameController.text.trim();
     final uniId = uniIdController.text.trim();
-
-    print('Iniciando registro...');
-    print('Email: $email');
-    print('Password: $password');
-    print('Name: $name');
-    print('University ID: $uniId');
+    final faculty = facultyController.text.trim();
 
     try {
       isLoading = true;
@@ -35,22 +31,19 @@ class RegisterViewModel extends ChangeNotifier {
         password,
         name,
         uniId,
+        faculty,
       );
 
-      print('Registro completado con éxito. User ID: ${response.user?.id}');
       return true;
     } on AuthException catch (e) {
       errorMessage = e.message;
-      print('Error de autenticación: ${e.message}');
       return false;
     } catch (e) {
       errorMessage = e.toString();
-      print('Error inesperado: $e');
       return false;
     } finally {
       isLoading = false;
       notifyListeners();
-      print('Registro finalizado.');
     }
   }
 
@@ -60,7 +53,7 @@ class RegisterViewModel extends ChangeNotifier {
     passwordController.dispose();
     nameController.dispose();
     uniIdController.dispose();
+    facultyController.dispose();
     super.dispose();
   }
 }
-
