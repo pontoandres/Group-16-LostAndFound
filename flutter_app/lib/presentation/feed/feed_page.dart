@@ -68,7 +68,7 @@ class _FeedBodyState extends State<_FeedBody> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Goatfound'),
-        backgroundColor: Colors.redAccent,
+        backgroundColor: const Color.fromARGB(255, 150, 222, 224),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu, color: Colors.white, size: 30),

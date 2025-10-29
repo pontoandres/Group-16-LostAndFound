@@ -9,8 +9,8 @@ class FeedItem {
   final String? category;
   final String? imageUrl;
   final DateTime createdAt;
-  final String? ownerName; // 👈 Nombre del usuario que publicó
-  final String? ownerEmail; // 👈 Correo del usuario que publicó
+  final String? ownerName; 
+  final String? ownerEmail; 
 
   FeedItem({
     required this.id,
@@ -33,7 +33,7 @@ class FeedItem {
         imageUrl: json['image_url'] as String?,
         createdAt: DateTime.parse(json['created_at'] as String),
 
-        // ✅ Lee los datos del perfil vinculado
+  
         ownerName: json['profiles']?['name'] ?? json['owner_name'],
         ownerEmail: json['profiles']?['email'] ?? json['owner_email'],
       );
@@ -52,14 +52,14 @@ class FeedViewModel extends ChangeNotifier {
     _subscribeRealtime();
   }
 
-  /// 🔹 Carga los objetos perdidos desde Supabase incluyendo la relación con `profiles`
+ 
   Future<void> load() async {
     try {
       isLoading = true;
       error = null;
       notifyListeners();
 
-      // ✅ Consulta con relación explícita para evitar conflictos
+      
       final res = await _client
           .from('lost_items')
           .select('''
@@ -88,7 +88,7 @@ class FeedViewModel extends ChangeNotifier {
     }
   }
 
-  /// 🔹 Suscripción en tiempo real a nuevos objetos
+ 
   void _subscribeRealtime() {
     _channel?.unsubscribe();
     _channel = _client.channel('public:lost_items')
