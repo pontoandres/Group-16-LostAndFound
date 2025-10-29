@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../services/supabase_auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+
+
 class RegisterViewModel extends ChangeNotifier {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -14,6 +16,8 @@ class RegisterViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
+  /// Método asíncrono de registro que retorna un Future<bool>.
+  /// Se ejecuta de forma concurrente sin afectar la interfaz.
   Future<bool> register() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();

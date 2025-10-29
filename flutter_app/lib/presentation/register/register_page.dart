@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/register_viewmodel/register_viewmodel.dart';
 
+/// Pantalla de registro que implementa la técnica de concurrencia `FutureBuilder`.
+/// Permite ejecutar el proceso de registro asíncronamente mostrando
+/// distintos estados visuales según el progreso del Future.
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
@@ -32,7 +35,8 @@ class _RegisterPageContent extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: ElevatedButton(
-                  onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, '/login'),
                   style: _buttonStyle,
                   child: const Text("Back to Login"),
                 ),
@@ -54,11 +58,13 @@ class _RegisterPageContent extends StatelessWidget {
               const SizedBox(height: 25),
               const Text("Email", style: _labelStyle),
               const SizedBox(height: 5),
-              _buildTextField(vm.emailController, hint: "youremail@uniandes.edu.co"),
+              _buildTextField(vm.emailController,
+                  hint: "youremail@uniandes.edu.co"),
               const SizedBox(height: 20),
               const Text("Password", style: _labelStyle),
               const SizedBox(height: 5),
-              _buildTextField(vm.passwordController, hint: "Your password", obscure: true),
+              _buildTextField(vm.passwordController,
+                  hint: "Your password", obscure: true),
               const SizedBox(height: 20),
               const Text("Name", style: _labelStyle),
               const SizedBox(height: 5),
@@ -70,34 +76,59 @@ class _RegisterPageContent extends StatelessWidget {
               const SizedBox(height: 20),
               const Text("Faculty", style: _labelStyle),
               const SizedBox(height: 5),
-              _buildTextField(vm.facultyController, hint: "e.g. Ingeniería, Derecho, Economía"),
+              _buildTextField(vm.facultyController,
+                  hint: "e.g. Ingeniería, Derecho, Economía"),
               const SizedBox(height: 35),
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: vm.isLoading
-                      ? null
-                      : () async {
+
+              /// ejecuta el proceso de registro como un Future
+              /// y actualiza el estado visual (cargando, éxito, error)
+              FutureBuilder<bool>(
+                future: vm.isLoading ? null : vm.register(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    );
+                  } else if (snapshot.hasError) {
+                    return Center(
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style:
+                            const TextStyle(color: Colors.red, fontSize: 16),
+                      ),
+                    );
+                  } else if (snapshot.hasData && snapshot.data == true) {
+                    return ElevatedButton(
+                      style: _buttonStyle,
+                      onPressed: () => Navigator.pushNamedAndRemoveUntil(
+                          context, '/login', (route) => false),
+                      child: const Text("Account created! Go to login"),
+                    );
+                  } else {
+                    return SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton(
+                        onPressed: () async {
                           final success = await vm.register();
                           if (success && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Account created. Check your email.")),
+                              const SnackBar(
+                                  content:
+                                      Text("Account created. Check your email.")),
                             );
-                            Future.delayed(const Duration(milliseconds: 300), () {
-                              Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-                            });
                           } else if (vm.errorMessage != null) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(content: Text(vm.errorMessage!)),
                             );
                           }
                         },
-                  style: _buttonStyle,
-                  child: vm.isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text("Create account"),
-                ),
+                        style: _buttonStyle,
+                        child: const Text("Create account"),
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
@@ -106,7 +137,8 @@ class _RegisterPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, {required String hint, bool obscure = false}) {
+  Widget _buildTextField(TextEditingController controller,
+      {required String hint, bool obscure = false}) {
     return TextField(
       controller: controller,
       obscureText: obscure,

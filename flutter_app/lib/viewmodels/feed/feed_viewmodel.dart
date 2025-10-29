@@ -9,6 +9,8 @@ class FeedItem {
   final String? category;
   final String? imageUrl;
   final DateTime createdAt;
+  final String? ownerName; // 👈 Nombre del usuario que publicó
+  final String? ownerEmail; // 👈 Correo del usuario que publicó
 
   FeedItem({
     required this.id,
@@ -18,6 +20,8 @@ class FeedItem {
     this.category,
     this.imageUrl,
     required this.createdAt,
+    this.ownerName,
+    this.ownerEmail,
   });
 
   factory FeedItem.fromJson(Map<String, dynamic> json) => FeedItem(
@@ -28,6 +32,10 @@ class FeedItem {
         category: json['category'] as String?,
         imageUrl: json['image_url'] as String?,
         createdAt: DateTime.parse(json['created_at'] as String),
+
+        // ✅ Lee los datos del perfil vinculado
+        ownerName: json['profiles']?['name'] ?? json['owner_name'],
+        ownerEmail: json['profiles']?['email'] ?? json['owner_email'],
       );
 }
 
@@ -37,7 +45,6 @@ class FeedViewModel extends ChangeNotifier {
   final List<FeedItem> items = [];
   bool isLoading = false;
   String? error;
-
   RealtimeChannel? _channel;
 
   Future<void> init() async {
@@ -45,30 +52,43 @@ class FeedViewModel extends ChangeNotifier {
     _subscribeRealtime();
   }
 
+  /// 🔹 Carga los objetos perdidos desde Supabase incluyendo la relación con `profiles`
   Future<void> load() async {
     try {
       isLoading = true;
       error = null;
       notifyListeners();
 
+      // ✅ Consulta con relación explícita para evitar conflictos
       final res = await _client
           .from('lost_items')
-          .select('id,user_id,title,location,category,image_url,created_at')
+          .select('''
+            id,
+            user_id,
+            title,
+            location,
+            category,
+            image_url,
+            created_at,
+            profiles!lost_items_user_id_fkey(name,email)
+          ''')
           .order('created_at', ascending: false);
 
       items
         ..clear()
-        ..addAll((res as List).map((e) => FeedItem.fromJson(e as Map<String, dynamic>)));
+        ..addAll((res as List)
+            .map((e) => FeedItem.fromJson(e as Map<String, dynamic>)));
     } on PostgrestException catch (e) {
       error = e.message;
     } catch (e) {
-      error = 'Unexpected error loading feed';
+      error = 'Unexpected error loading feed: $e';
     } finally {
       isLoading = false;
       notifyListeners();
     }
   }
 
+  /// 🔹 Suscripción en tiempo real a nuevos objetos
   void _subscribeRealtime() {
     _channel?.unsubscribe();
     _channel = _client.channel('public:lost_items')
@@ -93,4 +113,3 @@ class FeedViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
-
