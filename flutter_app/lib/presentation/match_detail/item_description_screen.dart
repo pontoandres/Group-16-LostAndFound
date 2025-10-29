@@ -30,7 +30,10 @@ class ItemDescriptionScreen extends StatelessWidget {
             Center(
               child: Text(
                 item.title,
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
             ),
             const SizedBox(height: 4),
@@ -47,11 +50,15 @@ class ItemDescriptionScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                     ? Image.network(item.imageUrl!, fit: BoxFit.cover)
-                    : Image.asset('assets/images/Rectangle17.png', fit: BoxFit.cover),
+                    : Image.asset('assets/images/Rectangle17.png',
+                        fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Description', style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text(
+              'Description',
+              style: TextStyle(fontWeight: FontWeight.w700),
+            ),
             const SizedBox(height: 8),
             Container(
               padding: const EdgeInsets.all(12),
@@ -67,9 +74,17 @@ class ItemDescriptionScreen extends StatelessWidget {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.claim, arguments: item);
+                Navigator.pushNamed(
+                  context,
+                  AppRoutes.claim,
+                  arguments: item,
+                );
               },
-              child: const Text('Claim Object'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.orange,
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Contact'),
             ),
           ],
         ),
@@ -77,5 +92,3 @@ class ItemDescriptionScreen extends StatelessWidget {
     );
   }
 }
-
-

@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_app/viewmodels/login_viewmodel/login_viewmodel.dart';
 import 'package:provider/provider.dart';
 
+/// Pantalla de inicio de sesión (LoginPage)
+/// Implementa la técnica de concurrencia `async/await` al interactuar
+/// con el ViewModel, garantizando una experiencia fluida sin bloqueo
+/// durante las operaciones de autenticación.
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -14,6 +18,9 @@ class LoginPage extends StatelessWidget {
   }
 }
 
+/// Formulario principal del login, conectado al ViewModel.
+/// El botón "Log in" ejecuta una función asíncrona (`await viewModel.login()`),
+/// suspendiendo su ejecución hasta que el proceso de autenticación finalice.
 class _LoginForm extends StatelessWidget {
   const _LoginForm();
 
@@ -28,7 +35,6 @@ class _LoginForm extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 40),
-
             Image.asset('assets/images/login.png', height: 280),
 
             const SizedBox(height: 20),
@@ -84,6 +90,11 @@ class _LoginForm extends StatelessWidget {
 
             const SizedBox(height: 30),
 
+            /// Botón principal de inicio de sesión.
+            /// Al presionarlo, se ejecuta una función asíncrona con `await`
+            /// que invoca al método `login()` del ViewModel.
+            /// Esto representa la concurrencia,
+            /// ya que la operación de red ocurre sin bloquear la UI.
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -102,8 +113,11 @@ class _LoginForm extends StatelessWidget {
                     ? null
                     : () async {
                         print("Botón Login presionado");
+
+                        // (1) Llamada asíncrona al método login()
                         final success = await viewModel.login();
 
+                        // (2) Validación del resultado una vez completada la Future.
                         if (success && context.mounted) {
                           Navigator.pushReplacementNamed(context, '/feed');
                         } else if (viewModel.errorMessage != null &&
@@ -151,4 +165,3 @@ class _LoginForm extends StatelessWidget {
     );
   }
 }
-
