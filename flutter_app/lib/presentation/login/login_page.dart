@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/viewmodels/login_viewmodel/login_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-/// Pantalla de inicio de sesión (LoginPage)
-/// Implementa la técnica de concurrencia `async/await` al interactuar
-/// con el ViewModel, garantizando una experiencia fluida sin bloqueo
-/// durante las operaciones de autenticación.
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
 
@@ -18,11 +16,29 @@ class LoginPage extends StatelessWidget {
   }
 }
 
-/// Formulario principal del login, conectado al ViewModel.
-/// El botón "Log in" ejecuta una función asíncrona (`await viewModel.login()`),
-/// suspendiendo su ejecución hasta que el proceso de autenticación finalice.
-class _LoginForm extends StatelessWidget {
+class _LoginForm extends StatefulWidget {
   const _LoginForm();
+
+  @override
+  State<_LoginForm> createState() => _LoginFormState();
+}
+
+class _LoginFormState extends State<_LoginForm> {
+  @override
+  void initState() {
+    super.initState();
+    _checkCachedLogin();
+  }
+
+  Future<void> _checkCachedLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedUser = prefs.getString('user_email');
+    if (savedUser != null) {
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/feed');
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,14 +52,12 @@ class _LoginForm extends StatelessWidget {
           children: [
             const SizedBox(height: 40),
             Image.asset('assets/images/login.png', height: 280),
-
             const SizedBox(height: 20),
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Email",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             const SizedBox(height: 5),
@@ -61,14 +75,12 @@ class _LoginForm extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Password",
-                style: TextStyle(
-                    fontWeight: FontWeight.bold, color: Colors.black),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
               ),
             ),
             const SizedBox(height: 5),
@@ -87,14 +99,7 @@ class _LoginForm extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 30),
-
-            /// Botón principal de inicio de sesión.
-            /// Al presionarlo, se ejecuta una función asíncrona con `await`
-            /// que invoca al método `login()` del ViewModel.
-            /// Esto representa la concurrencia,
-            /// ya que la operación de red ocurre sin bloquear la UI.
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -105,26 +110,55 @@ class _LoginForm extends StatelessWidget {
                   textStyle: const TextStyle(fontSize: 18),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(
-                        color: Color(0xFF714E1E), width: 2),
+                    side: const BorderSide(color: Color(0xFF714E1E), width: 2),
                   ),
                 ),
                 onPressed: viewModel.isLoading
                     ? null
                     : () async {
-                        print("Botón Login presionado");
+                        final connectivity =
+                            await Connectivity().checkConnectivity();
+                        if (connectivity == ConnectivityResult.none) {
+                          final prefs = await SharedPreferences.getInstance();
+                          final savedUser = prefs.getString('user_email');
+                          if (savedUser != null) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Offline login: Welcome back, $savedUser",
+                                  ),
+                                ),
+                              );
+                              Navigator.pushReplacementNamed(context, '/feed');
+                            }
+                            return;
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  "Offline mode unavailable — please connect.",
+                                ),
+                              ),
+                            );
+                            return;
+                          }
+                        }
 
-                        // (1) Llamada asíncrona al método login()
                         final success = await viewModel.login();
-
-                        // (2) Validación del resultado una vez completada la Future.
                         if (success && context.mounted) {
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString(
+                            'user_email',
+                            viewModel.emailController.text.trim(),
+                          );
                           Navigator.pushReplacementNamed(context, '/feed');
                         } else if (viewModel.errorMessage != null &&
                             context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(viewModel.errorMessage!)),
+                              content: Text(viewModel.errorMessage!),
+                            ),
                           );
                         }
                       },
@@ -133,19 +167,16 @@ class _LoginForm extends StatelessWidget {
                     : const Text("Log in"),
               ),
             ),
-
             const SizedBox(height: 20),
             TextButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/register'),
+              onPressed: () => Navigator.pushNamed(context, '/register'),
               child: const Text(
                 "Are you not registered yet?",
                 style: TextStyle(color: Colors.black),
               ),
             ),
             TextButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, '/forgot_password'),
+              onPressed: () => Navigator.pushNamed(context, '/forgot_password'),
               child: const Text(
                 "Forgot your password?",
                 style: TextStyle(color: Colors.black),

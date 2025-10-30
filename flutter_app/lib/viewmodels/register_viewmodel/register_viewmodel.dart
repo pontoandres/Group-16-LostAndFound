@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../services/supabase_auth_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
-
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 class RegisterViewModel extends ChangeNotifier {
   final emailController = TextEditingController();
@@ -16,8 +17,6 @@ class RegisterViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
-  /// Método asíncrono de registro que retorna un Future<bool>.
-  /// Se ejecuta de forma concurrente sin afectar la interfaz.
   Future<bool> register() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
@@ -30,7 +29,25 @@ class RegisterViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      final response = await _authService.signUpWithEmailAndPassword(
+      final connectivity = await Connectivity().checkConnectivity();
+      final prefs = await SharedPreferences.getInstance();
+
+      if (connectivity == ConnectivityResult.none) {
+        final pending = {
+          'email': email,
+          'password': password,
+          'name': name,
+          'uniId': uniId,
+          'faculty': faculty,
+        };
+        await prefs.setString('pending_registration', json.encode(pending));
+        errorMessage = '📴 Offline: Registration saved locally.';
+        notifyListeners();
+        return true;
+      }
+
+      
+      await _authService.signUpWithEmailAndPassword(
         email,
         password,
         name,
@@ -38,6 +55,8 @@ class RegisterViewModel extends ChangeNotifier {
         faculty,
       );
 
+     
+      await prefs.remove('pending_registration');
       return true;
     } on AuthException catch (e) {
       errorMessage = e.message;
@@ -49,6 +68,26 @@ class RegisterViewModel extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+
+  Future<void> trySyncPendingRegistration() async {
+    final prefs = await SharedPreferences.getInstance();
+    final connectivity = await Connectivity().checkConnectivity();
+    final cached = prefs.getString('pending_registration');
+    if (cached == null || connectivity == ConnectivityResult.none) return;
+
+    try {
+      final data = json.decode(cached);
+      await _authService.signUpWithEmailAndPassword(
+        data['email'],
+        data['password'],
+        data['name'],
+        data['uniId'],
+        data['faculty'],
+      );
+      await prefs.remove('pending_registration');
+    } catch (_) {}
   }
 
   @override
