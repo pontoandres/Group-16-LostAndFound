@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
 
+
+String _prepareContactMessage(Map<String, String> data) {
+  return "You can contact ${data['name']} through this email: ${data['email']}.";
+}
+
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Recupera el argumento enviado desde la pantalla de detalle
     final arg = ModalRoute.of(context)?.settings.arguments;
 
-    // ✅ Verifica que el argumento sea del tipo FeedItem
     if (arg is! FeedItem) {
       return const Scaffold(
         body: Center(child: Text("No item data provided")),
@@ -42,7 +46,6 @@ class ClaimObjectScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // ✅ Mensaje con nombre y correo del publicador
             Text(
               "You can contact ${item.ownerName ?? 'the user'} "
               "through this email:",
@@ -64,6 +67,7 @@ class ClaimObjectScreen extends StatelessWidget {
                 ),
               ),
             ),
+
             const SizedBox(height: 30),
             const Text(
               "If you lost this item, please contact the user directly via email.",
@@ -72,7 +76,49 @@ class ClaimObjectScreen extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
+
             const Spacer(),
+
+            // concurrencia compute()
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  final message = await compute(
+                    _prepareContactMessage,
+                    {
+                      'name': item.ownerName ?? 'the user',
+                      'email': item.ownerEmail ?? 'unknown',
+                    },
+                  );
+
+                  // 
+                  if (context.mounted) {
+                    showDialog(
+                      context: context,
+                      builder: (_) => AlertDialog(
+                        title: const Text("Generated Message"),
+                        content: Text(message),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("OK"),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.orange,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size(200, 45),
+                ),
+                child: const Text("Generate Contact Message"),
+              ),
+            ),
+
+            const SizedBox(height: 15),
+
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -83,7 +129,7 @@ class ClaimObjectScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.orange,
+                  backgroundColor: Colors.grey.shade300,
                   foregroundColor: Colors.black,
                   minimumSize: const Size(180, 45),
                 ),
