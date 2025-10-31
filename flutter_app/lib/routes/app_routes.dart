@@ -16,6 +16,7 @@ import '../presentation/camera/camera_screen.dart';
 import '../presentation/config/config_screen.dart';
 import '../presentation/reset_password/reset_password_page.dart';
 import '../presentation/statistics/reports_by_faculty_page.dart';
+import 'package:flutter_app/presentation/statistics/category_statistics_page.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -33,6 +34,7 @@ class AppRoutes {
   static const String config = '/config';
   static const String resetPassword = '/reset_password';
   static const String reportsByFaculty = '/reports_by_faculty';
+  static const String categoryStats = '/category_stats';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -50,6 +52,8 @@ class AppRoutes {
       config: (_) => const ConfigScreen(),
       resetPassword: (_) => const ResetPasswordPage(),
       reportsByFaculty: (_) => const ReportsByFacultyPage(),
+      categoryStats: (_) => const CategoryStatisticsPage(),
+
     };
   }
 }

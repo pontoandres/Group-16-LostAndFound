@@ -90,6 +90,14 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
               },
             ),
+            ListTile(
+  leading: const Icon(Icons.category_outlined),
+  title: const Text('Category Statistics'),
+  onTap: () {
+    Navigator.pop(context);
+    Navigator.pushNamed(context, AppRoutes.categoryStats);
+  },
+),
           ],
         ),
       ),
