@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ReportsByFacultyPage extends StatefulWidget {
   const ReportsByFacultyPage({super.key});
@@ -15,20 +18,63 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
   Stream<List<Map<String, dynamic>>> _facultyReportsStream() async* {
     while (true) {
       try {
-        final response = await _client.rpc('get_reports_by_faculty');
-        yield List<Map<String, dynamic>>.from(response ?? []);
+        final connectivity = await Connectivity().checkConnectivity();
+        final prefs = await SharedPreferences.getInstance();
+
+        if (connectivity == ConnectivityResult.none) {
+          //  leer desde caché local
+          final cached = prefs.getString('faculty_cache');
+          if (cached != null) {
+            final decoded =
+                List<Map<String, dynamic>>.from(json.decode(cached));
+            final date = prefs.getString('faculty_cache_date');
+            if (date != null) {
+              debugPrint('Mostrando datos cacheados del: $date');
+            }
+            yield decoded;
+          } else {
+            yield [];
+          }
+        } else {
+          // obtener desde Supabase
+          final response = await _client.rpc('get_reports_by_faculty');
+          final data = List<Map<String, dynamic>>.from(response ?? []);
+
+          //  guardar caché + fecha
+          await prefs.setString('faculty_cache', json.encode(data));
+          await prefs.setString(
+              'faculty_cache_date', DateTime.now().toIso8601String());
+
+          yield data;
+        }
       } catch (e) {
-        yield [];
+        debugPrint('Error cargando estadísticas: $e');
+
+        // mostrar caché local si hay error
+        final prefs = await SharedPreferences.getInstance();
+        final cached = prefs.getString('faculty_cache');
+        if (cached != null) {
+          yield List<Map<String, dynamic>>.from(json.decode(cached));
+        } else {
+          yield [];
+        }
       }
-      await Future.delayed(const Duration(seconds: 10)); // actualización periodica
+
+      // refrescar cada 15 segundos
+      await Future.delayed(const Duration(seconds: 15));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Faculty Statistics')),
-      //StreamBuilder
+      appBar: AppBar(
+        title: const Text(
+          'Faculty Statistics',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: const Color(0xFF57C3C7),
+      ),
       body: StreamBuilder<List<Map<String, dynamic>>>(
         stream: _facultyReportsStream(),
         builder: (context, snapshot) {
@@ -48,10 +94,17 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
             itemBuilder: (_, index) {
               final row = data[index];
               return Card(
+                elevation: 2,
                 child: ListTile(
-                  leading: const Icon(Icons.school),
-                  title: Text(row['faculty'] ?? 'Unknown'),
-                  trailing: Text('${row['total_reportes']} items'),
+                  leading: const Icon(Icons.school, color: Colors.teal),
+                  title: Text(
+                    row['faculty'] ?? 'Unknown',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  trailing: Text(
+                    '${row['total_reportes']} items',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               );
             },

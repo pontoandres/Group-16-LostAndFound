@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../viewmodels/register_viewmodel/register_viewmodel.dart';
 
-/// Pantalla de registro que implementa la técnica de concurrencia `FutureBuilder`.
-/// Permite ejecutar el proceso de registro asíncronamente mostrando
-/// distintos estados visuales según el progreso del Future.
 class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
@@ -17,8 +16,62 @@ class RegisterPage extends StatelessWidget {
   }
 }
 
-class _RegisterPageContent extends StatelessWidget {
+class _RegisterPageContent extends StatefulWidget {
   const _RegisterPageContent();
+
+  @override
+  State<_RegisterPageContent> createState() => _RegisterPageContentState();
+}
+
+class _RegisterPageContentState extends State<_RegisterPageContent> {
+  bool _isRetrying = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPendingRegistration();
+    _loadLastRegisteredUser(); //  para poder cargar el último registro exitoso
+  }
+
+  Future<void> _checkPendingRegistration() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hasPending = prefs.containsKey('pending_registration');
+    final connectivity = await Connectivity().checkConnectivity();
+
+    if (hasPending && connectivity != ConnectivityResult.none) {
+      setState(() => _isRetrying = true);
+      final data = prefs.getStringList('pending_registration');
+      if (data != null && data.length == 5) {
+        final vm = Provider.of<RegisterViewModel>(context, listen: false);
+        vm.emailController.text = data[0];
+        vm.passwordController.text = data[1];
+        vm.nameController.text = data[2];
+        vm.uniIdController.text = data[3];
+        vm.facultyController.text = data[4];
+        await vm.register();
+        await prefs.remove('pending_registration');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Pending registration completed.")),
+          );
+        }
+      }
+      setState(() => _isRetrying = false);
+    }
+  }
+
+  // cargar último usuario registrado exitosamente
+  Future<void> _loadLastRegisteredUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getStringList('last_registered_user');
+    if (data != null && data.length == 4) {
+      final vm = Provider.of<RegisterViewModel>(context, listen: false);
+      vm.emailController.text = data[0];
+      vm.nameController.text = data[1];
+      vm.uniIdController.text = data[2];
+      vm.facultyController.text = data[3];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -79,57 +132,61 @@ class _RegisterPageContent extends StatelessWidget {
               _buildTextField(vm.facultyController,
                   hint: "e.g. Ingeniería, Derecho, Economía"),
               const SizedBox(height: 35),
+              if (_isRetrying)
+                const Center(
+                    child: CircularProgressIndicator(color: Colors.white))
+              else
+                SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      final connectivity =
+                          await Connectivity().checkConnectivity();
+                      final prefs = await SharedPreferences.getInstance();
 
-              /// ejecuta el proceso de registro como un Future
-              /// y actualiza el estado visual (cargando, éxito, error)
-              FutureBuilder<bool>(
-                future: vm.isLoading ? null : vm.register(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: Colors.white),
-                    );
-                  } else if (snapshot.hasError) {
-                    return Center(
-                      child: Text(
-                        'Error: ${snapshot.error}',
-                        style:
-                            const TextStyle(color: Colors.red, fontSize: 16),
-                      ),
-                    );
-                  } else if (snapshot.hasData && snapshot.data == true) {
-                    return ElevatedButton(
-                      style: _buttonStyle,
-                      onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                          context, '/login', (route) => false),
-                      child: const Text("Account created! Go to login"),
-                    );
-                  } else {
-                    return SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          final success = await vm.register();
-                          if (success && context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                  content:
-                                      Text("Account created. Check your email.")),
-                            );
-                          } else if (vm.errorMessage != null) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(vm.errorMessage!)),
-                            );
-                          }
-                        },
-                        style: _buttonStyle,
-                        child: const Text("Create account"),
-                      ),
-                    );
-                  }
-                },
-              ),
+                      if (connectivity == ConnectivityResult.none) {
+                        await prefs.setStringList('pending_registration', [
+                          vm.emailController.text.trim(),
+                          vm.passwordController.text.trim(),
+                          vm.nameController.text.trim(),
+                          vm.uniIdController.text.trim(),
+                          vm.facultyController.text.trim(),
+                        ]);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text(
+                                  "No connection. Registration saved locally.")),
+                        );
+                        return;
+                      }
+
+                      final success = await vm.register();
+                      if (success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content:
+                                  Text("Account created. Check your email.")),
+                        );
+                        await prefs.remove('pending_registration');
+
+                        //  guardar último registro exitoso
+                        await prefs.setStringList('last_registered_user', [
+                          vm.emailController.text.trim(),
+                          vm.nameController.text.trim(),
+                          vm.uniIdController.text.trim(),
+                          vm.facultyController.text.trim(),
+                        ]);
+                      } else if (vm.errorMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(vm.errorMessage!)),
+                        );
+                      }
+                    },
+                    style: _buttonStyle,
+                    child: const Text("Create account"),
+                  ),
+                ),
             ],
           ),
         ),

@@ -12,24 +12,25 @@ class LoginViewModel extends ChangeNotifier {
   bool isLoading = false;
   String? errorMessage;
 
+
   Future<bool> login() async {
     final email = emailController.text.trim();
     final password = passwordController.text.trim();
 
     print("Iniciando login...");
     print("Email: $email");
-    print("Password: $password");
 
     try {
       isLoading = true;
       errorMessage = null;
       notifyListeners();
 
-      // 1. Validar con Auth
+     
       final response =
           await _authService.signInWithEmailAndPassword(email, password);
       final user = response.user;
 
+  
       if (user == null) {
         errorMessage = "Credenciales inválidas";
         return false;
@@ -37,7 +38,7 @@ class LoginViewModel extends ChangeNotifier {
 
       print("Usuario autenticado en Auth: ${user.id}");
 
-      // 2. Validar perfil en tabla profiles
+      
       final result = await _client
           .from('profiles')
           .select()
@@ -53,20 +54,24 @@ class LoginViewModel extends ChangeNotifier {
       print("Perfil encontrado en profiles: $result");
       return true;
     } on AuthException catch (e) {
+      
       errorMessage = e.message;
       print("Error de autenticación: ${e.message}");
       return false;
     } catch (e) {
+      
       errorMessage = 'Error inesperado: $e';
       print("Error inesperado en login: $e");
       return false;
     } finally {
+  
       isLoading = false;
       notifyListeners();
       print("Login finalizado");
     }
   }
 
+  
   @override
   void dispose() {
     emailController.dispose();

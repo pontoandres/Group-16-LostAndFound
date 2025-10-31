@@ -38,6 +38,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   supabase_flutter: ^2.10.0 # se agrega elpaquete de supabase mas nuevo
   provider: ^6.1.1
+  connectivity_plus: ^7.0.0
+  shared_preferences: ^2.5.3
 # hay que usar "flutter pub get" para instlar todas las dependencias
 dev_dependencies:
   flutter_test:

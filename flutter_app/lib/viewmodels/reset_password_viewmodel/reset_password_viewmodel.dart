@@ -33,12 +33,12 @@ class ResetPasswordViewModel extends ChangeNotifier {
       errorMessage = null;
       notifyListeners();
 
-      // Con el enlace de Supabase hay una sesión temporal válida para cambiar password
+      
       await Supabase.instance.client.auth.updateUser(
         UserAttributes(password: newPass),
       );
 
-      // Por seguridad, que vuelva a iniciar sesión con la nueva contraseña
+      
       await Supabase.instance.client.auth.signOut();
       return true;
     } on AuthException catch (e) {

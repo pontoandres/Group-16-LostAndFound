@@ -1,31 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
-
-
-String _prepareContactMessage(Map<String, String> data) {
-  return "You can contact ${data['name']} through this email: ${data['email']}.";
-}
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
 
+  //  función para guardar el último contacto
+  Future<void> _saveLastContact(String name, String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_contact_name', name);
+    await prefs.setString('last_contact_email', email);
+  }
+
   @override
   Widget build(BuildContext context) {
     final arg = ModalRoute.of(context)?.settings.arguments;
-
     if (arg is! FeedItem) {
       return const Scaffold(
         body: Center(child: Text("No item data provided")),
       );
     }
-
     final item = arg;
-
     return Scaffold(
       appBar: const TopBar(
         title: 'Contact',
@@ -39,16 +38,11 @@ class ClaimObjectScreen extends StatelessWidget {
             const SizedBox(height: 20),
             const Text(
               "Contact Information",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-
             Text(
-              "You can contact ${item.ownerName ?? 'the user'} "
-              "through this email:",
+              "You can contact ${item.ownerName ?? 'the user'} through this email:",
               style: const TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 10),
@@ -61,67 +55,15 @@ class ClaimObjectScreen extends StatelessWidget {
               ),
               child: Text(
                 item.ownerEmail ?? "No email available",
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
-
-            const SizedBox(height: 30),
-            const Text(
-              "If you lost this item, please contact the user directly via email.",
-              style: TextStyle(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-
             const Spacer(),
-
-            // concurrencia compute()
             Center(
               child: ElevatedButton(
+                // guardar último contacto antes de volver al feed
                 onPressed: () async {
-                  final message = await compute(
-                    _prepareContactMessage,
-                    {
-                      'name': item.ownerName ?? 'the user',
-                      'email': item.ownerEmail ?? 'unknown',
-                    },
-                  );
-
-                  // 
-                  if (context.mounted) {
-                    showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                        title: const Text("Generated Message"),
-                        content: Text(message),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("OK"),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppTheme.orange,
-                  foregroundColor: Colors.black,
-                  minimumSize: const Size(200, 45),
-                ),
-                child: const Text("Generate Contact Message"),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
+                  await _saveLastContact(item.ownerName ?? 'Unknown', item.ownerEmail ?? 'N/A');
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     AppRoutes.feed,
@@ -129,13 +71,14 @@ class ClaimObjectScreen extends StatelessWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.grey.shade300,
+                  backgroundColor: AppTheme.orange,
                   foregroundColor: Colors.black,
-                  minimumSize: const Size(180, 45),
+                  minimumSize: const Size(200, 45),
                 ),
                 child: const Text("Go back to Feed"),
               ),
             ),
+            const SizedBox(height: 15),
           ],
         ),
       ),

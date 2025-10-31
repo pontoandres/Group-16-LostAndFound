@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
@@ -68,7 +67,7 @@ class _FeedBodyState extends State<_FeedBody> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Goatfound'),
-        backgroundColor: const Color.fromARGB(255, 150, 222, 224),
+        backgroundColor: const Color.fromARGB(255, 87, 195, 199),
         leading: Builder(
           builder: (context) => IconButton(
             icon: const Icon(Icons.menu, color: Colors.white, size: 30),
@@ -124,6 +123,7 @@ class _FeedBodyState extends State<_FeedBody> {
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
                         : const Icon(Icons.search),
