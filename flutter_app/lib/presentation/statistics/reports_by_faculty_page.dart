@@ -21,26 +21,36 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
         final connectivity = await Connectivity().checkConnectivity();
         final prefs = await SharedPreferences.getInstance();
 
+        debugPrint('Estado de red: $connectivity');
+
         if (connectivity == ConnectivityResult.none) {
-          //  leer desde caché local
           final cached = prefs.getString('faculty_cache');
           if (cached != null) {
+            debugPrint('Usando datos desde caché local');
             final decoded =
                 List<Map<String, dynamic>>.from(json.decode(cached));
-            final date = prefs.getString('faculty_cache_date');
-            if (date != null) {
-              debugPrint('Mostrando datos cacheados del: $date');
-            }
             yield decoded;
           } else {
+            debugPrint('No hay datos en caché');
             yield [];
           }
         } else {
-          // obtener desde Supabase
+          debugPrint('Consultando Supabase RPC...');
           final response = await _client.rpc('get_reports_by_faculty');
-          final data = List<Map<String, dynamic>>.from(response ?? []);
+          debugPrint('Tipo de respuesta RPC: ${response.runtimeType}');
+          debugPrint('Contenido bruto RPC: $response');
 
-          //  guardar caché + fecha
+          List<Map<String, dynamic>> data = [];
+          if (response is List) {
+            data = List<Map<String, dynamic>>.from(response);
+          } else if (response is Map && response.containsKey('data')) {
+            data = List<Map<String, dynamic>>.from(response['data']);
+          } else {
+            debugPrint('Formato inesperado de respuesta RPC');
+          }
+
+          debugPrint('Datos parseados (${data.length} filas): $data');
+
           await prefs.setString('faculty_cache', json.encode(data));
           await prefs.setString(
               'faculty_cache_date', DateTime.now().toIso8601String());
@@ -48,19 +58,19 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
           yield data;
         }
       } catch (e) {
-        debugPrint('Error cargando estadísticas: $e');
-
-        // mostrar caché local si hay error
+        debugPrint('Error en el stream: $e');
         final prefs = await SharedPreferences.getInstance();
         final cached = prefs.getString('faculty_cache');
         if (cached != null) {
+          debugPrint('Recuperando datos desde caché tras error');
           yield List<Map<String, dynamic>>.from(json.decode(cached));
         } else {
+          debugPrint('Sin caché disponible');
           yield [];
         }
       }
 
-      // refrescar cada 15 segundos
+      debugPrint('Esperando 15 segundos para siguiente actualización');
       await Future.delayed(const Duration(seconds: 15));
     }
   }
@@ -83,6 +93,8 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
           }
 
           final data = snapshot.data!;
+          debugPrint('Snapshot actualizado: ${data.length} registros');
+
           if (data.isEmpty) {
             return const Center(child: Text('No data available'));
           }
@@ -93,6 +105,8 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
             separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (_, index) {
               final row = data[index];
+              debugPrint('Renderizando fila $index: $row');
+
               return Card(
                 elevation: 2,
                 child: ListTile(
