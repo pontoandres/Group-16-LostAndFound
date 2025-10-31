@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../services/lost_items_service.dart';
 
 class LostReportViewModel extends ChangeNotifier {
@@ -12,7 +14,8 @@ class LostReportViewModel extends ChangeNotifier {
   final locationCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
 
-  Uint8List? imageBytes;
+ Uint8List? imageBytes;
+
   String? imageUrl;
   DateTime? lostAt = DateTime.now();
 
@@ -38,12 +41,19 @@ class LostReportViewModel extends ChangeNotifier {
   }
 
   Future<List<String>> _loadCategories() async {
-    final data = await _client.from('categories').select('name').order('name');
-    final list = (data as List).map((e) => (e['name'] ?? '').toString()).where((e) => e.isNotEmpty).toList();
-    if (list.isEmpty) {
+    try {
+      final data = await _client.from('categories').select('name').order('name');
+      final list = (data as List)
+          .map((e) => (e['name'] ?? '').toString())
+          .where((e) => e.isNotEmpty)
+          .toList();
+      if (list.isEmpty) {
+        return ['Backpack', 'Keys', 'Card', 'Laptop', 'Headphones', 'Bottle', 'Calculator'];
+      }
+      return list;
+    } catch (_) {
       return ['Backpack', 'Keys', 'Card', 'Laptop', 'Headphones', 'Bottle', 'Calculator'];
     }
-    return list;
   }
 
   Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
@@ -60,19 +70,51 @@ class LostReportViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> submit() async {
+  // ---- conectividad: verificación robusta ----
+  Future<bool> _hasInternet() async {
+    final status = await Connectivity().checkConnectivity();
+    if (status == ConnectivityResult.none) return false;
+
+    // Extra: prueba rápida de salida a internet real (no solo red local)
+    try {
+      final result = await InternetAddress.lookup('example.com')
+          .timeout(const Duration(seconds: 2));
+      return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
+  Future<bool> submit(BuildContext context) async {
     final user = _client.auth.currentUser;
     if (user == null) {
       error = 'No hay sesión activa';
       notifyListeners();
       return false;
     }
+
     final title = titleCtrl.text.trim();
     if (title.isEmpty) {
       error = 'El título es obligatorio';
       notifyListeners();
       return false;
     }
+
+    // Antes de llamar Supabase/Storage, validar conectividad
+    final online = await _hasInternet();
+    if (!online) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("You can’t post an item because you don’t have Internet."),
+          ),
+        );
+      }
+      return false;
+    }
+
     try {
       isLoading = true;
       error = null;
@@ -93,8 +135,22 @@ class LostReportViewModel extends ChangeNotifier {
 
       _clear();
       return true;
+    } on SocketException {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("You can’t post an item because you don’t have Internet."),
+          ),
+        );
+      }
+      return false;
     } catch (e) {
       error = 'Error: $e';
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(error!)),
+        );
+      }
       return false;
     } finally {
       isLoading = false;
