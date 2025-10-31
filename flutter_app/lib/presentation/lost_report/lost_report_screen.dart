@@ -141,7 +141,7 @@ class _LostReportBody extends StatelessWidget {
                 onPressed: vm.isLoading
                     ? null
                     : () async {
-                        final ok = await vm.submit();
+                        final ok = await vm.submit(context);
                         if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('Item reported')),
