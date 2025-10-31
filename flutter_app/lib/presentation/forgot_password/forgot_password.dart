@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/viewmodels/forgot_viewmodel/forgot_password_viewmodel.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_app/viewmodels/forgot_viewmodel/forgot_password_viewmodel.dart';
 
 class ForgotPasswordPage extends StatelessWidget {
   const ForgotPasswordPage({super.key});
@@ -19,7 +19,7 @@ class _ForgotPasswordForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = Provider.of<ForgotPasswordViewModel>(context);
+    final vm = Provider.of<ForgotPasswordViewModel>(context, listen: false);
 
     return Scaffold(
       backgroundColor: const Color(0xFF4E919D),
@@ -32,9 +32,7 @@ class _ForgotPasswordForm extends StatelessWidget {
               Align(
                 alignment: Alignment.centerLeft,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/login');
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '/login'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFE49957),
                     foregroundColor: const Color(0xFF2D3A3A),
@@ -72,56 +70,104 @@ class _ForgotPasswordForm extends StatelessWidget {
 
               const Text("Email", style: _labelStyle),
               const SizedBox(height: 5),
-              _buildTextField(
-                controller: viewModel.emailController,
-                hint: "youremail@account.com",
-              ),
-              const SizedBox(height: 35),
 
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: viewModel.isLoading
-                      ? null
-                      : () async {
-                          final success = await viewModel.sendRecoveryEmail();
-                          if (context.mounted) {
-                            if (success) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Se ha enviado un correo de recuperación.'),
-                                ),
-                              );
-                              Navigator.pushNamed(context, '/login');
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(viewModel.errorMessage ?? 'Error'),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE49957),
-                    foregroundColor: const Color(0xFF2D3A3A),
-                    textStyle: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      side: const BorderSide(
-                        color: Color(0xFF714E1E),
-                        width: 2,
+              // --- FutureBuilder: prefilling del email desde caché local ---
+              FutureBuilder<String?>(
+                future: vm.prefillEmailFuture,
+                builder: (context, snap) {
+                  // El campo siempre está visible; cuando el future completa, ya
+                  // habrá prefijado el controller desde el ViewModel.
+                  return _buildTextField(
+                    controller: vm.emailController,
+                    hint: "youremail@account.com",
+                  );
+                },
+              ),
+
+              const SizedBox(height: 10),
+
+              // --- StreamBuilder: banner de conectividad en vivo ---
+              Consumer<ForgotPasswordViewModel>(
+                builder: (_, model, __) {
+                  return StreamBuilder<bool>(
+                    stream: model.offlineStream,
+                    initialData: model.isOffline,
+                    builder: (context, snapshot) {
+                      final offline = snapshot.data ?? false;
+                      if (!offline) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12.0),
+                        child: MaterialBanner(
+                          backgroundColor: Colors.amber.shade200,
+                          content: const Text(
+                            "You're offline. Recovery email cannot be sent.",
+                          ),
+                          leading: const Icon(Icons.wifi_off),
+                          actions: [
+                            TextButton(
+                              onPressed: () =>
+                                  ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+
+              const SizedBox(height: 20),
+
+              // --- Botón: async/await con loading & validación compute() ---
+              Consumer<ForgotPasswordViewModel>(
+                builder: (_, model, __) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: (model.isLoading)
+                          ? null
+                          : () async {
+                              final success = await model.recover();
+                              if (!context.mounted) return;
+
+                              if (success) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Se ha enviado un correo de recuperación.'),
+                                  ),
+                                );
+                                Navigator.pushNamed(context, '/login');
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(model.errorMessage ?? 'Error'),
+                                  ),
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE49957),
+                        foregroundColor: const Color(0xFF2D3A3A),
+                        textStyle: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          side: const BorderSide(
+                            color: Color(0xFF714E1E),
+                            width: 2,
+                          ),
+                        ),
                       ),
+                      child: model.isLoading
+                          ? const CircularProgressIndicator(color: Colors.black)
+                          : const Text("Recover"),
                     ),
-                  ),
-                  child: viewModel.isLoading
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text("Recover"),
-                ),
+                  );
+                },
               ),
             ],
           ),
@@ -147,6 +193,7 @@ class _ForgotPasswordForm extends StatelessWidget {
           borderSide: BorderSide.none,
         ),
       ),
+      keyboardType: TextInputType.emailAddress,
     );
   }
 }
