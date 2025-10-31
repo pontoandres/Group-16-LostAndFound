@@ -9,24 +9,31 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.lostandfound.R
 import com.example.lostandfound.SupabaseProvider
+import com.example.lostandfound.databinding.ActivityHomeBinding
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
+import com.google.android.material.textfield.TextInputEditText
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 
 class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
+    private lateinit var binding: ActivityHomeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        // setContentView(R.layout.activity_home)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         setupToolbar()
 
-        val rv = findViewById<RecyclerView>(R.id.rvItems)
-        val edt = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.edtSearch)
+        val rv = binding.rvItems
+        val edt = binding.edtSearch
+
 
         adapter = LostItemAdapter { item ->
             // Usa el modelo de Esteban: getName(), getPostedBy(), getImageRes()
