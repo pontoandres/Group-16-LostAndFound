@@ -44,8 +44,6 @@ class LostItem {
 class LostItemsService {
   final _client = Supabase.instance.client;
 
-  LostItemsService(); // <= ESTO ES LO ÚNICO QUE SE AÑADIÓ para evitar el error de compilación
-
   Future<LostItem> create({
     required String title,
     String? description,
@@ -60,20 +58,25 @@ class LostItemsService {
     final insert = {
       'user_id': user.id,
       'title': title.trim(),
-      'description': description?.trim(),
-      'category': category?.trim(),
-      'location': location?.trim(),
+      'description': description?.trim().isEmpty == true ? null : description?.trim(),
+      'category': category?.trim().isEmpty == true ? null : category?.trim(),
+      'location': location?.trim().isEmpty == true ? null : location?.trim(),
       'lost_at': lostAt?.toIso8601String(),
       'image_url': imageUrl,
     };
 
-    final data = await _client
-        .from('lost_items')
-        .insert(insert)
-        .select()
-        .single();
-
-    return LostItem.fromMap(data);
+    try {
+      final data = await _client.from('lost_items').insert(insert).select().single();
+      return LostItem.fromMap(data);
+    } on PostgrestException catch (e) {
+      final isCheckViolation = e.code == '23514' && (e.message ?? '').contains('lost_items_category_check');
+      if (isCheckViolation) {
+        final retry = Map<String, dynamic>.from(insert)..['category'] = null;
+        final data = await _client.from('lost_items').insert(retry).select().single();
+        return LostItem.fromMap(data);
+      }
+      rethrow;
+    }
   }
 
   Future<List<LostItem>> fetchFeed({int limit = 50}) async {
@@ -113,13 +116,11 @@ class LostItemsService {
 
     final contentType = mime.lookupMimeType('', headerBytes: bytes) ?? 'image/jpeg';
 
-    await _client.storage
-        .from('lost-items')
-        .uploadBinary(
-          path,
-          bytes,
-          fileOptions: FileOptions(contentType: contentType),
-        );
+    await _client.storage.from('lost-items').uploadBinary(
+      path,
+      bytes,
+      fileOptions: FileOptions(contentType: contentType),
+    );
 
     return _client.storage.from('lost-items').getPublicUrl(path);
   }
