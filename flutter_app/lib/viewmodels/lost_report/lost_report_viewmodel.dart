@@ -1,11 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../services/lost_items_service.dart';
 
 class LostReportViewModel extends ChangeNotifier {
@@ -14,8 +16,7 @@ class LostReportViewModel extends ChangeNotifier {
   final locationCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
 
- Uint8List? imageBytes;
-
+  Uint8List? imageBytes;
   String? imageUrl;
   DateTime? lostAt = DateTime.now();
 
@@ -29,9 +30,16 @@ class LostReportViewModel extends ChangeNotifier {
   final _descRemainingCtrl = StreamController<int>.broadcast();
   Stream<int> get descRemainingStream => _descRemainingCtrl.stream;
 
+  static const _draftKey = 'lost_report_draft_v1';
+
   LostReportViewModel() {
     categoriesFuture = _loadCategories();
     descriptionCtrl.addListener(_onDescriptionChanged);
+
+    for (final c in [titleCtrl, descriptionCtrl, locationCtrl, categoryCtrl]) {
+      c.addListener(_saveDraftLocally);
+    }
+    _loadDraft();
     _onDescriptionChanged();
   }
 
@@ -61,24 +69,63 @@ class LostReportViewModel extends ChangeNotifier {
     final XFile? picked = await picker.pickImage(source: source, maxWidth: 1280);
     if (picked != null) {
       imageBytes = await picked.readAsBytes();
+      await _saveDraftLocally();
       notifyListeners();
     }
   }
 
   void setLostAt(DateTime d) {
     lostAt = d;
+    _saveDraftLocally();
     notifyListeners();
   }
 
-  // ---- conectividad: verificación robusta ----
+  Future<void> _saveDraftLocally() async {
+    final prefs = await SharedPreferences.getInstance();
+    final map = <String, dynamic>{
+      'title': titleCtrl.text,
+      'description': descriptionCtrl.text,
+      'category': categoryCtrl.text,
+      'location': locationCtrl.text,
+      'lostAt': lostAt?.toIso8601String(),
+      'image': (imageBytes != null) ? base64Encode(imageBytes!) : null,
+    };
+    await prefs.setString(_draftKey, json.encode(map));
+  }
+
+  Future<void> _loadDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_draftKey);
+    if (raw == null) return;
+    final map = json.decode(raw) as Map<String, dynamic>;
+    titleCtrl.text = (map['title'] ?? '') as String;
+    descriptionCtrl.text = (map['description'] ?? '') as String;
+    categoryCtrl.text = (map['category'] ?? '') as String;
+    locationCtrl.text = (map['location'] ?? '') as String;
+    final when = map['lostAt'] as String?;
+    if (when != null && when.isNotEmpty) {
+      lostAt = DateTime.tryParse(when) ?? DateTime.now();
+    }
+    final img = map['image'] as String?;
+    if (img != null && img.isNotEmpty) {
+      try {
+        imageBytes = base64Decode(img);
+      } catch (_) {}
+    }
+    notifyListeners();
+  }
+
+  Future<void> _clearDraft() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_draftKey);
+  }
+
   Future<bool> _hasInternet() async {
     final status = await Connectivity().checkConnectivity();
     if (status == ConnectivityResult.none) return false;
-
-    // Extra: prueba rápida de salida a internet real (no solo red local)
     try {
-      final result = await InternetAddress.lookup('example.com')
-          .timeout(const Duration(seconds: 2));
+      final result =
+          await InternetAddress.lookup('example.com').timeout(const Duration(seconds: 2));
       return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
     } on SocketException {
       return false;
@@ -102,7 +149,6 @@ class LostReportViewModel extends ChangeNotifier {
       return false;
     }
 
-    // Antes de llamar Supabase/Storage, validar conectividad
     final online = await _hasInternet();
     if (!online) {
       if (context.mounted) {
@@ -133,6 +179,7 @@ class LostReportViewModel extends ChangeNotifier {
         imageUrl: imageUrl,
       );
 
+      await _clearDraft();
       _clear();
       return true;
     } on SocketException {
@@ -187,6 +234,7 @@ class LostReportViewModel extends ChangeNotifier {
     } else {
       titleCtrl.text = '$suggestion';
     }
+    await _saveDraftLocally();
     notifyListeners();
   }
 
