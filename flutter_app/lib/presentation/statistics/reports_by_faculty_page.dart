@@ -15,36 +15,42 @@ class ReportsByFacultyPage extends StatefulWidget {
 class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
   final _client = Supabase.instance.client;
 
-
   Stream<List<Map<String, dynamic>>> _facultyReportsStream() async* {
     while (true) {
       try {
         final connectivity = await Connectivity().checkConnectivity();
         final prefs = await SharedPreferences.getInstance();
 
-        
         if (connectivity == ConnectivityResult.none) {
+          //  leer desde caché local
           final cached = prefs.getString('faculty_cache');
           if (cached != null) {
-            final decoded = List<Map<String, dynamic>>.from(json.decode(cached));
+            final decoded =
+                List<Map<String, dynamic>>.from(json.decode(cached));
+            final date = prefs.getString('faculty_cache_date');
+            if (date != null) {
+              debugPrint('Mostrando datos cacheados del: $date');
+            }
             yield decoded;
           } else {
             yield [];
           }
         } else {
-          
+          // obtener desde Supabase
           final response = await _client.rpc('get_reports_by_faculty');
           final data = List<Map<String, dynamic>>.from(response ?? []);
 
-          
+          //  guardar caché + fecha
           await prefs.setString('faculty_cache', json.encode(data));
+          await prefs.setString(
+              'faculty_cache_date', DateTime.now().toIso8601String());
 
           yield data;
         }
       } catch (e) {
         debugPrint('Error cargando estadísticas: $e');
 
-        
+        // mostrar caché local si hay error
         final prefs = await SharedPreferences.getInstance();
         final cached = prefs.getString('faculty_cache');
         if (cached != null) {
@@ -54,7 +60,7 @@ class _ReportsByFacultyPageState extends State<ReportsByFacultyPage> {
         }
       }
 
-      
+      // refrescar cada 15 segundos
       await Future.delayed(const Duration(seconds: 15));
     }
   }

@@ -30,6 +30,7 @@ class _RegisterPageContentState extends State<_RegisterPageContent> {
   void initState() {
     super.initState();
     _checkPendingRegistration();
+    _loadLastRegisteredUser(); //  para poder cargar el último registro exitoso
   }
 
   Future<void> _checkPendingRegistration() async {
@@ -56,6 +57,19 @@ class _RegisterPageContentState extends State<_RegisterPageContent> {
         }
       }
       setState(() => _isRetrying = false);
+    }
+  }
+
+  // cargar último usuario registrado exitosamente
+  Future<void> _loadLastRegisteredUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final data = prefs.getStringList('last_registered_user');
+    if (data != null && data.length == 4) {
+      final vm = Provider.of<RegisterViewModel>(context, listen: false);
+      vm.emailController.text = data[0];
+      vm.nameController.text = data[1];
+      vm.uniIdController.text = data[2];
+      vm.facultyController.text = data[3];
     }
   }
 
@@ -155,6 +169,14 @@ class _RegisterPageContentState extends State<_RegisterPageContent> {
                                   Text("Account created. Check your email.")),
                         );
                         await prefs.remove('pending_registration');
+
+                        //  guardar último registro exitoso
+                        await prefs.setStringList('last_registered_user', [
+                          vm.emailController.text.trim(),
+                          vm.nameController.text.trim(),
+                          vm.uniIdController.text.trim(),
+                          vm.facultyController.text.trim(),
+                        ]);
                       } else if (vm.errorMessage != null) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text(vm.errorMessage!)),

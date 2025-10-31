@@ -28,15 +28,23 @@ class _LoginFormState extends State<_LoginForm> {
   void initState() {
     super.initState();
     _checkCachedLogin();
+    _loadLastEmail(); //
   }
 
   Future<void> _checkCachedLogin() async {
     final prefs = await SharedPreferences.getInstance();
     final savedUser = prefs.getString('user_email');
     if (savedUser != null) {
-      if (mounted) {
-        Navigator.pushReplacementNamed(context, '/feed');
-      }
+      if (mounted) Navigator.pushReplacementNamed(context, '/feed');
+    }
+  }
+
+  //  carga último email escrito
+  Future<void> _loadLastEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastEmail = prefs.getString('last_logged_email');
+    if (lastEmail != null && mounted) {
+      setState(() => context.read<LoginViewModel>().emailController.text = lastEmail);
     }
   }
 
@@ -55,10 +63,8 @@ class _LoginFormState extends State<_LoginForm> {
             const SizedBox(height: 20),
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "Email",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+              child: Text("Email",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
             ),
             const SizedBox(height: 5),
             TextField(
@@ -78,10 +84,8 @@ class _LoginFormState extends State<_LoginForm> {
             const SizedBox(height: 20),
             const Align(
               alignment: Alignment.centerLeft,
-              child: Text(
-                "Password",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black),
-              ),
+              child: Text("Password",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black)),
             ),
             const SizedBox(height: 5),
             TextField(
@@ -116,18 +120,16 @@ class _LoginFormState extends State<_LoginForm> {
                 onPressed: viewModel.isLoading
                     ? null
                     : () async {
-                        final connectivity =
-                            await Connectivity().checkConnectivity();
+                        final connectivity = await Connectivity().checkConnectivity();
+                        final prefs = await SharedPreferences.getInstance();
+
                         if (connectivity == ConnectivityResult.none) {
-                          final prefs = await SharedPreferences.getInstance();
                           final savedUser = prefs.getString('user_email');
                           if (savedUser != null) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(
-                                    "Offline login: Welcome back, $savedUser",
-                                  ),
+                                  content: Text("Offline login: Welcome back, $savedUser"),
                                 ),
                               );
                               Navigator.pushReplacementNamed(context, '/feed');
@@ -136,9 +138,7 @@ class _LoginFormState extends State<_LoginForm> {
                           } else {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(
-                                  "Offline mode unavailable — please connect.",
-                                ),
+                                content: Text("Offline mode unavailable — please connect."),
                               ),
                             );
                             return;
@@ -147,18 +147,15 @@ class _LoginFormState extends State<_LoginForm> {
 
                         final success = await viewModel.login();
                         if (success && context.mounted) {
-                          final prefs = await SharedPreferences.getInstance();
-                          await prefs.setString(
-                            'user_email',
-                            viewModel.emailController.text.trim(),
-                          );
+                          await prefs.setString('user_email',
+                              viewModel.emailController.text.trim());
+                          // ✅ PASO 4: guarda último login
+                          await prefs.setString('last_logged_email',
+                              viewModel.emailController.text.trim());
                           Navigator.pushReplacementNamed(context, '/feed');
-                        } else if (viewModel.errorMessage != null &&
-                            context.mounted) {
+                        } else if (viewModel.errorMessage != null && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(viewModel.errorMessage!),
-                            ),
+                            SnackBar(content: Text(viewModel.errorMessage!)),
                           );
                         }
                       },
@@ -170,17 +167,13 @@ class _LoginFormState extends State<_LoginForm> {
             const SizedBox(height: 20),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/register'),
-              child: const Text(
-                "Are you not registered yet?",
-                style: TextStyle(color: Colors.black),
-              ),
+              child: const Text("Are you not registered yet?",
+                  style: TextStyle(color: Colors.black)),
             ),
             TextButton(
               onPressed: () => Navigator.pushNamed(context, '/forgot_password'),
-              child: const Text(
-                "Forgot your password?",
-                style: TextStyle(color: Colors.black),
-              ),
+              child: const Text("Forgot your password?",
+                  style: TextStyle(color: Colors.black)),
             ),
           ],
         ),

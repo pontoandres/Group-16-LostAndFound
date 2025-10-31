@@ -4,9 +4,17 @@ import '../widgets/debug_nav.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../theme/app_theme.dart';
 import '../../routes/app_routes.dart';
+import 'package:shared_preferences/shared_preferences.dart'; 
 
 class ClaimObjectScreen extends StatelessWidget {
   const ClaimObjectScreen({super.key});
+
+  //  función para guardar el último contacto
+  Future<void> _saveLastContact(String name, String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('last_contact_name', name);
+    await prefs.setString('last_contact_email', email);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +55,15 @@ class ClaimObjectScreen extends StatelessWidget {
               ),
               child: Text(
                 item.ownerEmail ?? "No email available",
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
             const Spacer(),
             Center(
               child: ElevatedButton(
-                onPressed: () {
+                // guardar último contacto antes de volver al feed
+                onPressed: () async {
+                  await _saveLastContact(item.ownerName ?? 'Unknown', item.ownerEmail ?? 'N/A');
                   Navigator.pushNamedAndRemoveUntil(
                     context,
                     AppRoutes.feed,
