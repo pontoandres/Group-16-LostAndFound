@@ -71,12 +71,9 @@ class _ForgotPasswordForm extends StatelessWidget {
               const Text("Email", style: _labelStyle),
               const SizedBox(height: 5),
 
-              // --- FutureBuilder: prefilling del email desde caché local ---
               FutureBuilder<String?>(
                 future: vm.prefillEmailFuture,
                 builder: (context, snap) {
-                  // El campo siempre está visible; cuando el future completa, ya
-                  // habrá prefijado el controller desde el ViewModel.
                   return _buildTextField(
                     controller: vm.emailController,
                     hint: "youremail@account.com",
@@ -86,7 +83,7 @@ class _ForgotPasswordForm extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // --- StreamBuilder: banner de conectividad en vivo ---
+             
               Consumer<ForgotPasswordViewModel>(
                 builder: (_, model, __) {
                   return StreamBuilder<bool>(
@@ -119,7 +116,7 @@ class _ForgotPasswordForm extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // --- Botón: async/await con loading & validación compute() ---
+              
               Consumer<ForgotPasswordViewModel>(
                 builder: (_, model, __) {
                   return SizedBox(

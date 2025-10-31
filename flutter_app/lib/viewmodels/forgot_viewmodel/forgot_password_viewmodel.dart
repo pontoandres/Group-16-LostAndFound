@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart'; // compute
+import 'dart:io';                   
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -50,9 +51,23 @@ class ForgotPasswordViewModel extends ChangeNotifier {
     await prefs.setString('last_logged_email', email);
   }
 
+  Future<bool> _hasInternet() async {
+    final status = await Connectivity().checkConnectivity();
+    if (status == ConnectivityResult.none) return false;
+
+    try {
+      final res = await InternetAddress.lookup('example.com')
+          .timeout(const Duration(seconds: 2));
+      return res.isNotEmpty && res.first.rawAddress.isNotEmpty;
+    } on SocketException {
+      return false;
+    } on TimeoutException {
+      return false;
+    }
+  }
+
   static Map<String, dynamic> _validateEmailIsolate(String raw) {
     final trimmed = raw.trim().toLowerCase();
-    // Regex razonable para validación básica
     final re = RegExp(r"^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
     final ok = re.hasMatch(trimmed);
     return <String, dynamic>{'ok': ok, 'email': trimmed};
@@ -72,9 +87,9 @@ class ForgotPasswordViewModel extends ChangeNotifier {
     }
     final email = v['email'] as String;
 
-    final now = await Connectivity().checkConnectivity();
-    if (now == ConnectivityResult.none) {
-      errorMessage = "You don't have Internet connection";
+    if (!await _hasInternet()) {
+      errorMessage =
+          "You can’t change your password, because you don’t have Internet.";
       notifyListeners();
       return false;
     }
@@ -83,10 +98,14 @@ class ForgotPasswordViewModel extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      await _authService.resetPassword(email); 
-      await _saveLastEmail(email);            
+      await _authService.resetPassword(email);
+      await _saveLastEmail(email);
 
       return true;
+    } on SocketException {
+      errorMessage =
+          "You can’t change your password, because you don’t have Internet.";
+      return false;
     } on AuthException catch (e) {
       errorMessage = e.message;
       return false;
