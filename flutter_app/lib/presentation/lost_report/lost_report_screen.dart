@@ -1,4 +1,3 @@
-// lib/presentation/lost_report/lost_report_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/lost_report/lost_report_viewmodel.dart';
@@ -11,138 +10,157 @@ class LostReportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (_) => LostReportViewModel(),
-      child: const _Form(),
+      child: const _LostReportBody(),
     );
   }
 }
 
-class _Form extends StatelessWidget {
-  const _Form();
+class _LostReportBody extends StatelessWidget {
+  const _LostReportBody();
 
   @override
-Widget build(BuildContext context) {
-  final vm = context.watch<LostReportViewModel>();
+  Widget build(BuildContext context) {
+    final vm = context.watch<LostReportViewModel>();
 
-  return Scaffold(
-    appBar: AppBar(title: const Text('Report a lost item')),
-    body: SafeArea(
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Preview de la imagen (con alto fijo)
-          if (vm.imageBytes != null)
-            ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.memory(
-                vm.imageBytes!,
-                height: 180,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-            )
-         else
-  OutlinedButton.icon(
-    onPressed: () async {
-      final option = await showModalBottomSheet<ImageSource>(
-        context: context,
-        builder: (_) => SafeArea(
-          child: Wrap(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.camera_alt),
-                title: const Text('Take a photo'),
-                onTap: () => Navigator.pop(context, ImageSource.camera),
-              ),
-              ListTile(
-                leading: const Icon(Icons.photo),
-                title: const Text('Choose from gallery'),
-                onTap: () => Navigator.pop(context, ImageSource.gallery),
-              ),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Report lost item'),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
         ),
-      );
-      if (option != null) {
-        await vm.pickImage(source: option);
-      }
-    },
-    icon: const Icon(Icons.add_a_photo),
-    label: const Text('Add Image'),
-  ),
-
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: vm.titleCtrl,
-            decoration: const InputDecoration(labelText: 'Title'),
-          ),
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: vm.descriptionCtrl,
-            maxLines: 3,
-            decoration: const InputDecoration(labelText: 'Description'),
-          ),
-          const SizedBox(height: 12),
-
-          TextField(
-            controller: vm.locationCtrl,
-            decoration: const InputDecoration(labelText: 'Location'),
-          ),
-          const SizedBox(height: 12),
-
-          // Fecha
-          Row(
-            children: [
-              Expanded(
-                child: Text('Lost at: ${vm.lostAt?.toLocal() ?? '-'}'),
-              ),
-              TextButton(
-                onPressed: () async {
-                  final now = DateTime.now();
-                  final picked = await showDatePicker(
-                    context: context,
-                    initialDate: vm.lostAt ?? now,
-                    firstDate: DateTime(now.year - 3),
-                    lastDate: DateTime(now.year + 3),
-                  );
-                  if (picked != null) vm.setLostAt(picked);
-                },
-                child: const Text('Pick date'),
-              ),
-            ],
-          ), 
-          const SizedBox(height: 24),
-
-          // Guardar
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: vm.isLoading
-                  ? null
-                  : () async {
-                      final ok = await vm.submit();
-                      if (!context.mounted) return;
-                      if (ok) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Item reported!')),
-                        );
-                        Navigator.pop(context); // vuelve al feed
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text(vm.error ?? 'Error')),
-                        );
-                      }
-                    },
-              child: vm.isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text('Report'),
-            ),
-          ),
-          const SizedBox(height: 24),
-        ],
       ),
-    ),
-  );
-}
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            TextField(
+              controller: vm.titleCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Title',
+                filled: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: vm.descriptionCtrl,
+              maxLines: 3,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                filled: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: vm.categoryCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Category',
+                filled: true,
+                hintText: 'e.g. wallet, keys, phone...',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: vm.locationCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Location',
+                filled: true,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    vm.lostAt != null ? vm.lostAt!.toLocal().toString() : '',
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final now = DateTime.now();
+                    final picked = await showDatePicker(
+                      context: context,
+                      initialDate: vm.lostAt ?? now,
+                      firstDate: DateTime(now.year - 3),
+                      lastDate: DateTime(now.year + 1),
+                    );
+                    if (picked != null) {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.fromDateTime(vm.lostAt ?? now),
+                      );
+                      final dt = DateTime(
+                        picked.year,
+                        picked.month,
+                        picked.day,
+                        time?.hour ?? 0,
+                        time?.minute ?? 0,
+                      );
+                      vm.setLostAt(dt);
+                    }
+                  },
+                  child: const Text('Pick date/time'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: vm.isLoading
+                        ? null
+                        : () => vm.pickImage(source: ImageSource.gallery),
+                    icon: const Icon(Icons.photo),
+                    label: const Text('Gallery'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: vm.isLoading
+                        ? null
+                        : () => vm.pickImage(source: ImageSource.camera),
+                    icon: const Icon(Icons.camera_alt),
+                    label: const Text('Camera'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (vm.imageBytes != null)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.memory(vm.imageBytes!, height: 160, fit: BoxFit.cover),
+              ),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 52,
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: vm.isLoading
+                    ? null
+                    : () async {
+                        final ok = await vm.submit();
+                        if (ok && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Item reported')),
+                          );
+                          Navigator.pop(context, true);
+                        } else if (vm.error != null && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(vm.error!)),
+                          );
+                        }
+                      },
+                child: vm.isLoading
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text('Submit'),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
