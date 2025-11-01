@@ -14,6 +14,7 @@ class ForgotPasswordViewModel extends ChangeNotifier {
   String? errorMessage;
 
   final SupabaseAuthService _authService = SupabaseAuthService();
+  final SupabaseClient _client = Supabase.instance.client; 
 
   bool isOffline = false;
   late final Stream<bool> offlineStream;
@@ -99,7 +100,17 @@ class ForgotPasswordViewModel extends ChangeNotifier {
       notifyListeners();
 
       await _authService.resetPassword(email);
+
       await _saveLastEmail(email);
+
+      try {
+        await _client.from('password_audit_requests').insert({
+          'email': email,
+          
+        });
+      } catch (e) {
+        debugPrint('Audit insert error (password_audit_requests): $e');
+      }
 
       return true;
     } on SocketException {
