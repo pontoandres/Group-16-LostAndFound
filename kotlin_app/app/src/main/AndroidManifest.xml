@@ -4,14 +4,10 @@
     <!-- Permisos -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- Leer fotos SÓLO si se va a abrir galería (no para tomar foto) -->
-    <!-- Android 13+ -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
-    <!-- Android 12 y menores -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
 
-    <!-- Declarar la feature de cámara como no requerida para evitar el warning -->
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false" />
@@ -19,6 +15,8 @@
     <application
         android:name=".LostAndFoundApp"
         android:allowBackup="true"
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -38,55 +36,20 @@
             </intent-filter>
         </activity>
 
-        <!-- Internas (no expuestas) -->
-        <activity
-            android:name=".ui.register.RegisterActivity"
-            android:exported="false"/>
+        <!-- Internas -->
+        <activity android:name=".ui.register.RegisterActivity" android:exported="false"/>
+        <activity android:name=".ui.forgotpassword.ForgotPasswordActivity" android:exported="false"/>
+        <activity android:name=".ui.camera.CameraActivity" android:exported="false" android:screenOrientation="portrait"/>
+        <activity android:name=".ui.report.ReportLostItemActivity" android:exported="false"/>
+        <activity android:name=".ui.profile.ProfileActivity" android:exported="false"/>
+        <activity android:name=".ui.home.HomeActivity" android:exported="false" android:label="UniFind"/>
+        <activity android:name=".ui.detail.ItemDetailActivity" android:exported="false" android:label="UniFind"/>
+        <activity android:name=".ui.claimobject.ClaimObjectActivity" android:exported="false"/>
+        <activity android:name=".ui.notifications.NotificationsActivity" android:exported="false"/>
+        <activity android:name=".ui.history.HistoryActivity" android:exported="false"/>
+        <activity android:name=".ui.settings.SettingsActivity" android:exported="false"/>
 
-        <activity
-            android:name=".ui.forgotpassword.ForgotPasswordActivity"
-            android:exported="false"/>
-
-        <activity
-            android:name=".ui.camera.CameraActivity"
-            android:exported="false"
-            android:screenOrientation="portrait" />
-
-        <activity
-            android:name=".ui.report.ReportLostItemActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.profile.ProfileActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.home.HomeActivity"
-            android:exported="false"
-            android:label="UniFind" />
-
-        <activity
-            android:name=".ui.detail.ItemDetailActivity"
-            android:exported="false"
-            android:label="UniFind" />
-
-        <activity
-            android:name=".ui.claimobject.ClaimObjectActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.notifications.NotificationsActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.history.HistoryActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".ui.settings.SettingsActivity"
-            android:exported="false" />
-
-        <!-- Deep link para reset de contraseña (custom scheme, NO app links) -->
+        <!-- Deep link reset password -->
         <activity
             android:name=".ui.resetpassword.ResetPasswordActivity"
             android:exported="true">
@@ -94,10 +57,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <!-- com.example.lostandfound://login-callback -->
-                <data
-                    android:scheme="com.example.lostandfound"
-                    android:host="login-callback" />
+                <data android:scheme="com.example.lostandfound" android:host="login-callback" />
             </intent-filter>
         </activity>
 

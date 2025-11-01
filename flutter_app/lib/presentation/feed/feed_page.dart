@@ -98,6 +98,15 @@ class _FeedBodyState extends State<_FeedBody> {
     Navigator.pushNamed(context, AppRoutes.categoryStats);
   },
 ),
+  ListTile(
+    leading: const Icon(Icons.change_circle),
+    title: const Text('Password Changes (by Faculty)'),
+    onTap: () {
+      Navigator.pop(context);
+      Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
+    },
+  ),
+
           ],
         ),
       ),

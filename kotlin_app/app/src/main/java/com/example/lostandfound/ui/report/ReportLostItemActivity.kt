@@ -11,10 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.lostandfound.databinding.ActivityReportLostItemBinding
+import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.services.ItemSuggestion
 import com.example.lostandfound.ui.camera.CameraActivity
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,7 +26,9 @@ import java.util.*
 class ReportLostItemActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportLostItemBinding
-    private val viewModel: ReportLostItemViewModel by viewModels()
+    private val viewModel: ReportLostItemViewModel by viewModels {
+        ReportLostItemViewModelFactory(applicationContext)
+    }
 
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -120,6 +126,19 @@ class ReportLostItemActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
+        // Monitor connectivity state (Eventual Connectivity pattern)
+        lifecycleScope.launch {
+            viewModel.connectionState.collect { connectionState ->
+                val isOffline = connectionState == ConnectionState.Unavailable
+                android.util.Log.d("ReportLostItem", "Connection state: $connectionState (offline=$isOffline)")
+                
+                // Show/hide offline indicator in UI (optional)
+                if (isOffline) {
+                    Toast.makeText(this@ReportLostItemActivity, "Working offline. Changes will sync when connection is restored.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        
         viewModel.state.observe(this, Observer { state ->
             binding.progressBar.visibility = if (state.isLoading)
                 android.view.View.VISIBLE else android.view.View.GONE
@@ -182,6 +201,9 @@ class ReportLostItemActivity : AppCompatActivity() {
                 applySuggestion(primarySuggestion)
             }
 
+            // Display enhanced attributes for primary suggestion
+            displayEnhancedAttributes(primarySuggestion)
+
             // Show additional suggestions if available
             if (suggestions.size > 1) {
                 binding.layoutAdditionalSuggestions.visibility = View.VISIBLE
@@ -216,12 +238,42 @@ class ReportLostItemActivity : AppCompatActivity() {
             binding.txtDescriptionLabel.layoutParams = layoutParams
         }
     }
+    
+    private fun displayEnhancedAttributes(suggestion: ItemSuggestion) {
+        val attributesParts = mutableListOf<String>()
+        
+        suggestion.color?.let { attributesParts.add("Color: $it") }
+        suggestion.condition?.let { attributesParts.add("Condition: $it") }
+        suggestion.size?.let { attributesParts.add("Size: $it") }
+        
+        if (suggestion.distinctiveFeatures.isNotEmpty()) {
+            attributesParts.add("Features: ${suggestion.distinctiveFeatures.joinToString(", ")}")
+        }
+        
+        if (attributesParts.isNotEmpty()) {
+            binding.txtAttributes.text = attributesParts.joinToString(" • ")
+            binding.txtAttributes.visibility = View.VISIBLE
+        } else {
+            binding.txtAttributes.visibility = View.GONE
+        }
+        
+        // Display detailed caption if available
+        suggestion.detailedCaption?.let { caption ->
+            binding.txtDetailedCaption.text = caption
+            binding.txtDetailedCaption.visibility = View.VISIBLE
+        } ?: run {
+            binding.txtDetailedCaption.visibility = View.GONE
+        }
+    }
 
     private fun applySuggestion(suggestion: ItemSuggestion) {
         val (title, description, category) = viewModel.applySuggestion(suggestion)
 
         binding.etTitle.setText(title)
-        binding.etDescription.setText(description ?: "")
+        
+        // Use detailed caption if available, otherwise use basic description
+        val descriptionText = suggestion.detailedCaption ?: suggestion.description ?: description ?: ""
+        binding.etDescription.setText(descriptionText)
 
         // Set category in spinner
         val categories = viewModel.categories.value ?: emptyList()

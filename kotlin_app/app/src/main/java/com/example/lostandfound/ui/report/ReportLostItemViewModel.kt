@@ -1,13 +1,21 @@
 package com.example.lostandfound.ui.report
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lostandfound.data.repository.LostItemsRepository
 import com.example.lostandfound.data.repository.LostItemsRepositoryImpl
+import com.example.lostandfound.data.remote.ConnectivityMonitor
+import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.services.ItemSuggestion
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -19,15 +27,38 @@ data class ReportLostItemState(
     val imageFile: File? = null,
     val lostDate: Date? = null,
     val suggestions: List<ItemSuggestion> = emptyList(),
-    val selectedSuggestion: ItemSuggestion? = null
+    val selectedSuggestion: ItemSuggestion? = null,
+    val isOffline: Boolean = false // New: track connectivity state
 )
 
-class ReportLostItemViewModel : ViewModel() {
+class ReportLostItemViewModel(
+    private val context: Context
+) : ViewModel() {
     
-    private val repository: LostItemsRepository = LostItemsRepositoryImpl()
+    private val repository: LostItemsRepository = LostItemsRepositoryImpl(context)
     
     private val _state = MutableLiveData(ReportLostItemState())
     val state: LiveData<ReportLostItemState> = _state
+    
+    // Connectivity monitoring (Eventual Connectivity pattern)
+    val connectionState: StateFlow<ConnectionState> = ConnectivityMonitor
+        .observe(context)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), ConnectionState.Available)
+    
+    init {
+        // Monitor connectivity changes and update state
+        viewModelScope.launch {
+            connectionState.collect { state ->
+                val isOffline = state == ConnectionState.Unavailable
+                _state.value = _state.value?.copy(isOffline = isOffline)
+                
+                if (state == ConnectionState.Available) {
+                    // Connection restored: try to sync pending items
+                    android.util.Log.d("ReportLostItemVM", "Connection restored, sync will happen via worker")
+                }
+            }
+        }
+    }
     
     private val _categories = MutableLiveData(listOf(
         "Electronics",
@@ -88,7 +119,11 @@ class ReportLostItemViewModel : ViewModel() {
             return
         }
 
+        // ===== TECHNIQUE #2: Enhanced Coroutines with explicit Dispatchers =====
+        // viewModelScope launches on Main dispatcher (UI thread)
+        // withContext(Dispatchers.IO) switches to I/O thread for network/database work
         viewModelScope.launch {
+            // This runs on Main dispatcher (UI thread)
             _state.value = _state.value?.copy(isLoading = true, error = null)
 
             try {
@@ -97,22 +132,42 @@ class ReportLostItemViewModel : ViewModel() {
                 }
                 val lostAt = _state.value?.lostDate?.let { dateFormat.format(it) }
 
-                repository.createLostItem(
-                    title = title.trim(),
-                    description = description.trim().takeIf { it.isNotEmpty() },
-                    location = location.trim().takeIf { it.isNotEmpty() },
-                    category = category.trim().takeIf { it.isNotEmpty() },
-                    lostAt = lostAt,
-                    imageFile = _state.value?.imageFile
-                )
+                // Switch to IO dispatcher for network/database operations
+                val result = withContext(Dispatchers.IO) {
+                    repository.createLostItem(
+                        title = title.trim(),
+                        description = description.trim().takeIf { it.isNotEmpty() },
+                        location = location.trim().takeIf { it.isNotEmpty() },
+                        category = category.trim().takeIf { it.isNotEmpty() },
+                        lostAt = lostAt,
+                        imageFile = _state.value?.imageFile
+                    )
+                }
 
-                _state.value = _state.value?.copy(
-                    isLoading = false,
-                    success = true,
-                    error = null
+                // Back on Main dispatcher (UI thread) for state updates
+                result.fold(
+                    onSuccess = { lostItem ->
+                        val currentState = _state.value
+                        val isOffline = currentState?.isOffline == true
+                        
+                        _state.value = currentState?.copy(
+                            isLoading = false,
+                            success = true,
+                            error = if (isOffline) {
+                                "Item saved locally. Will sync when connection is restored."
+                            } else null
+                        )
+                    },
+                    onFailure = { error ->
+                        _state.value = _state.value?.copy(
+                            isLoading = false,
+                            error = error.message ?: "Failed to create lost item"
+                        )
+                    }
                 )
 
             } catch (e: Exception) {
+                // Still on Main dispatcher for UI updates
                 _state.value = _state.value?.copy(
                     isLoading = false,
                     error = e.message ?: "An error occurred"

@@ -54,13 +54,14 @@ class LostItemAdapter(
         private val name: TextView = itemView.findViewById(R.id.txtName)
 
         fun bind(item: LostItem) {
-
-            val imageUrl = item.imageUrl ?: ""
-
-            img.load(imageUrl.ifEmpty { R.drawable.ic_placeholder }) {
-                crossfade(true)
-                placeholder(R.drawable.ic_placeholder)
-                error(R.drawable.ic_broken_image)
+            if (!item.imageUrl.isNullOrEmpty()) {
+                img.load(item.imageUrl) {
+                    crossfade(true)
+                    placeholder(R.drawable.ic_placeholder)
+                    error(R.drawable.ic_broken_image)
+                }
+            } else {
+                img.setImageResource(item.getImageRes())
             }
 
             name.text = item.getName()
