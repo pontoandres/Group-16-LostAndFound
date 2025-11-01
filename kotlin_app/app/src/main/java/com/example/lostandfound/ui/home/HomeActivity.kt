@@ -4,11 +4,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.lostandfound.R
 import com.example.lostandfound.SupabaseProvider
-import com.example.lostandfound.databinding.ActivityHomeBinding
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
@@ -18,20 +18,15 @@ import kotlinx.coroutines.launch
 class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
-    private lateinit var binding: ActivityHomeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // setContentView(R.layout.activity_home)
-        binding = ActivityHomeBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+        setContentView(R.layout.activity_home)
 
         setupToolbar()
 
-        val rv = binding.rvItems
-        val edt = binding.edtSearch
-
+        val rv = findViewById<RecyclerView>(R.id.rvItems)
+        val edt = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.edtSearch)
 
         adapter = LostItemAdapter { item ->
             // Usa el modelo de Esteban: getName(), getPostedBy(), getImageRes()
@@ -45,8 +40,6 @@ class HomeActivity : BaseActivity() {
                 .putExtra("imageRes", item.getImageRes())
                 // si tienes sesión, calcula dueño real: currentUserId == item.userId
                 .putExtra("isOwner", false)
-                .putExtra("imageUrl", item.imageUrl)
-                .putExtra("createdAt", item.createdAt)
 
             startActivity(intent)
         }
@@ -90,13 +83,7 @@ class HomeActivity : BaseActivity() {
                 adapter.submitList(mergedItems)
 
             } catch (e: Exception) {
-                val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
-                if (cached.isNotEmpty()) {
-                    adapter.submitList(cached)
-                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
-                }
+                e.printStackTrace()
             }
         }
     }

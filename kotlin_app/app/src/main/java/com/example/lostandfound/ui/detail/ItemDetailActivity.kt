@@ -83,7 +83,7 @@
                     title = name,
                     description = desc,
                     imageUrl = imageUrl,
-                    createdAt = createdAt
+                    createdAt = createdAt ?: java.time.Instant.now().toString()
                 )
                 ItemCache.saveItem(this@ItemDetailActivity, item)
             }

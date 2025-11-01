@@ -142,7 +142,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
-                android:text="Tap to auto-fill form"
+                android:text="Tap to auto-fill form with AI-enhanced details"
                 android:textSize="12sp"
                 android:textColor="@color/brand_text_secondary" />
 
@@ -157,6 +157,37 @@
                 android:textAllCaps="false"
                 app:cornerRadius="8dp"
                 app:strokeColor="@color/brand_primary" />
+
+            <!-- Enhanced Attributes Display -->
+            <LinearLayout
+                android:id="@+id/layoutAttributes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:background="@android:color/transparent">
+
+                <TextView
+                    android:id="@+id/txtAttributes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Detected: Color, Condition, Size"
+                    android:textSize="11sp"
+                    android:textColor="@color/brand_text_secondary"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/txtDetailedCaption"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Detailed AI-generated description..."
+                    android:textSize="10sp"
+                    android:textColor="@color/brand_text_secondary"
+                    android:visibility="gone"
+                    android:lineSpacingExtra="2dp" />
+            </LinearLayout>
 
             <!-- Additional Suggestions -->
             <LinearLayout
