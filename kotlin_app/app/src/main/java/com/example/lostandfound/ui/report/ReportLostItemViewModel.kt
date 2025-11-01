@@ -1,12 +1,18 @@
 package com.example.lostandfound.ui.report
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.lostandfound.data.repository.LostItemsRepository
 import com.example.lostandfound.data.repository.LostItemsRepositoryImpl
+import com.example.lostandfound.data.remote.ConnectivityMonitor
+import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.services.ItemSuggestion
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,15 +27,38 @@ data class ReportLostItemState(
     val imageFile: File? = null,
     val lostDate: Date? = null,
     val suggestions: List<ItemSuggestion> = emptyList(),
-    val selectedSuggestion: ItemSuggestion? = null
+    val selectedSuggestion: ItemSuggestion? = null,
+    val isOffline: Boolean = false // New: track connectivity state
 )
 
-class ReportLostItemViewModel : ViewModel() {
+class ReportLostItemViewModel(
+    private val context: Context
+) : ViewModel() {
     
-    private val repository: LostItemsRepository = LostItemsRepositoryImpl()
+    private val repository: LostItemsRepository = LostItemsRepositoryImpl(context)
     
     private val _state = MutableLiveData(ReportLostItemState())
     val state: LiveData<ReportLostItemState> = _state
+    
+    // Connectivity monitoring (Eventual Connectivity pattern)
+    val connectionState: StateFlow<ConnectionState> = ConnectivityMonitor
+        .observe(context)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), ConnectionState.Available)
+    
+    init {
+        // Monitor connectivity changes and update state
+        viewModelScope.launch {
+            connectionState.collect { state ->
+                val isOffline = state == ConnectionState.Unavailable
+                _state.value = _state.value?.copy(isOffline = isOffline)
+                
+                if (state == ConnectionState.Available) {
+                    // Connection restored: try to sync pending items
+                    android.util.Log.d("ReportLostItemVM", "Connection restored, sync will happen via worker")
+                }
+            }
+        }
+    }
     
     private val _categories = MutableLiveData(listOf(
         "Electronics",
@@ -118,10 +147,15 @@ class ReportLostItemViewModel : ViewModel() {
                 // Back on Main dispatcher (UI thread) for state updates
                 result.fold(
                     onSuccess = { lostItem ->
-                        _state.value = _state.value?.copy(
+                        val currentState = _state.value
+                        val isOffline = currentState?.isOffline == true
+                        
+                        _state.value = currentState?.copy(
                             isLoading = false,
                             success = true,
-                            error = null
+                            error = if (isOffline) {
+                                "Item saved locally. Will sync when connection is restored."
+                            } else null
                         )
                     },
                     onFailure = { error ->

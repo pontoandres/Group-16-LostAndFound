@@ -11,10 +11,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.lostandfound.databinding.ActivityReportLostItemBinding
+import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.services.ItemSuggestion
 import com.example.lostandfound.ui.camera.CameraActivity
+import kotlinx.coroutines.launch
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -22,7 +26,9 @@ import java.util.*
 class ReportLostItemActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportLostItemBinding
-    private val viewModel: ReportLostItemViewModel by viewModels()
+    private val viewModel: ReportLostItemViewModel by viewModels {
+        ReportLostItemViewModelFactory(applicationContext)
+    }
 
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -120,6 +126,19 @@ class ReportLostItemActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
+        // Monitor connectivity state (Eventual Connectivity pattern)
+        lifecycleScope.launch {
+            viewModel.connectionState.collect { connectionState ->
+                val isOffline = connectionState == ConnectionState.Unavailable
+                android.util.Log.d("ReportLostItem", "Connection state: $connectionState (offline=$isOffline)")
+                
+                // Show/hide offline indicator in UI (optional)
+                if (isOffline) {
+                    Toast.makeText(this@ReportLostItemActivity, "Working offline. Changes will sync when connection is restored.", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+        
         viewModel.state.observe(this, Observer { state ->
             binding.progressBar.visibility = if (state.isLoading)
                 android.view.View.VISIBLE else android.view.View.GONE
