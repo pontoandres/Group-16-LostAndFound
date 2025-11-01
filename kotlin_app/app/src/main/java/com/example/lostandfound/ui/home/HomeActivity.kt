@@ -4,16 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.lostandfound.R
 import com.example.lostandfound.SupabaseProvider
 import com.example.lostandfound.databinding.ActivityHomeBinding
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
-import com.google.android.material.textfield.TextInputEditText
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 
@@ -48,6 +46,7 @@ class HomeActivity : BaseActivity() {
                 // si tienes sesión, calcula dueño real: currentUserId == item.userId
                 .putExtra("isOwner", false)
                 .putExtra("imageUrl", item.imageUrl)
+                .putExtra("createdAt", item.createdAt)
 
             startActivity(intent)
         }
@@ -91,7 +90,13 @@ class HomeActivity : BaseActivity() {
                 adapter.submitList(mergedItems)
 
             } catch (e: Exception) {
-                e.printStackTrace()
+                val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
+                if (cached.isNotEmpty()) {
+                    adapter.submitList(cached)
+                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

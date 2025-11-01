@@ -1,6 +1,5 @@
 package com.example.lostandfound.model
 
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerialName
 
@@ -18,7 +17,7 @@ data class LostItem(
     @SerialName("lost_at")
     val lostAt: String? = null,
     @SerialName("created_at")
-    val createdAt: String,
+    val createdAt: String?,
     @SerialName("is_claimed")
     val isClaimed: Boolean = false,
     @SerialName("claimed_by_id")
