@@ -2,30 +2,27 @@ package com.example.lostandfound.ui.home
 
 import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.widget.Toast
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.example.lostandfound.R
+import com.example.lostandfound.databinding.ActivityHomeBinding
 import com.example.lostandfound.SupabaseProvider
+import com.example.lostandfound.data.remote.ConnectivityMonitor
+import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
-import io.github.jan.supabase.postgrest.postgrest
-import kotlinx.coroutines.launch
-
-import com.example.lostandfound.data.remote.ConnectivityMonitor
-import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.workers.enqueueBqRefreshLast30Days
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.repeatOnLifecycle
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch as ktxLaunch
 import com.jakewharton.rxbinding4.widget.textChanges
+import io.github.jan.supabase.postgrest.postgrest
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.disposables.CompositeDisposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.concurrent.TimeUnit
 
 class HomeActivity : BaseActivity() {
@@ -34,17 +31,6 @@ class HomeActivity : BaseActivity() {
   
     private lateinit var binding: ActivityHomeBinding
     private val bag = CompositeDisposable() // Rx
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
-
-        setupToolbar()
-
-        val rv = findViewById<RecyclerView>(R.id.rvItems)
-        val edt = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.edtSearch)
-
-   
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -102,25 +88,31 @@ class HomeActivity : BaseActivity() {
         super.onDestroy()
     }
 
+    // ===== TECHNIQUE #2: Enhanced Coroutines with explicit Dispatchers =====
     private fun loadLostItems() {
         lifecycleScope.launch {
             try {
-                val lostItems = SupabaseProvider.client
-                    .postgrest["lost_items"].select()
-                    .decodeList<LostItem>()
-
-                val profiles = SupabaseProvider.client
-                    .postgrest["profiles"].select()
-                    .decodeList<Profile>()
-
-                val mergedItems = lostItems.map { item ->
-                    val user = profiles.find { it.id == item.userId }
-                    item.copy(legacyPostedBy = user?.name ?: "Unknown")
+                // Switch to IO dispatcher for network operations (Supabase calls)
+                val lostItems = withContext(Dispatchers.IO) {
+                    SupabaseProvider.client.postgrest["lost_items"].select().decodeList<LostItem>()
+                }
+                val profiles = withContext(Dispatchers.IO) {
+                    SupabaseProvider.client.postgrest["profiles"].select().decodeList<Profile>()
                 }
 
+                // Process data on Default dispatcher (CPU work for mapping)
+                val mergedItems = withContext(Dispatchers.Default) {
+                    lostItems.map { item ->
+                        val user = profiles.find { it.id == item.userId }
+                        item.copy(legacyPostedBy = user?.name ?: "Unknown")
+                    }
+                }
+                // Back on Main dispatcher for UI updates
                 adapter.submitList(mergedItems)
-
             } catch (e: Exception) {
+                // Error handling on Main thread for UI updates
+                android.util.Log.e("HomeActivity", "Error loading lost items", e)
+                Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
                 e.printStackTrace()
             }
         }

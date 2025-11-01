@@ -1,12 +1,21 @@
 package com.example.lostandfound.data.repository
 
+import android.content.Context
 import android.util.Log
 import com.example.lostandfound.SupabaseProvider
+import com.example.lostandfound.data.local.DbProvider
+import com.example.lostandfound.data.local.LostItemDao
+import com.example.lostandfound.data.local.LostItemEntity
 import com.example.lostandfound.model.LostItem
+import com.example.lostandfound.workers.enqueueLostItemSync
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
@@ -16,7 +25,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.runBlocking
 
-class LostItemsRepositoryImpl : LostItemsRepository {
+class LostItemsRepositoryImpl(
+    private val context: Context,
+    private val dao: LostItemDao = DbProvider.get(context).lostItemDao(),
+    private val ttlMs: Long = 5 * 60 * 1000L // 5 minutes TTL
+) : LostItemsRepository {
 
     private val supabase = SupabaseProvider.client
     private val TAG = "LostItemsRepo"
@@ -31,49 +44,93 @@ class LostItemsRepositoryImpl : LostItemsRepository {
         category: String?,
         lostAt: String?,
         imageFile: File?
-    ): Result<LostItem> = runCatching {
-        val user = supabase.auth.currentUserOrNull()
-            ?: error("No hay sesión activa")
+    ): Result<LostItem> = withContext(Dispatchers.IO) {
+        runCatching {
+            val user = supabase.auth.currentUserOrNull()
+                ?: error("No hay sesión activa")
 
-        Log.d(TAG, "Creating lost item for user: ${user.id}")
+            Log.d(TAG, "Creating lost item for user: ${user.id}")
 
-        // Upload image if provided
-        val imageUrl = if (imageFile != null) {
-            Log.d(TAG, "Uploading image: ${imageFile.absolutePath}")
-            uploadImage(imageFile, user.id).getOrThrow()
-        } else {
-            Log.d(TAG, "No image provided")
-            null
+            val itemId = UUID.randomUUID().toString()
+            val createdAt = java.time.Instant.now().toString()
+
+            // Upload image if provided and online (otherwise queue for later)
+            val imageUrl = if (imageFile != null) {
+                Log.d(TAG, "Uploading image: ${imageFile.absolutePath}")
+                // Try upload, but don't fail if offline - image will be synced later
+                uploadImage(imageFile, user.id).getOrNull()
+            } else {
+                Log.d(TAG, "No image provided")
+                null
+            }
+
+            // Always save locally first (offline-first approach)
+            val entity = LostItemEntity(
+                id = itemId,
+                userId = user.id,
+                title = title.trim(),
+                description = description?.trim(),
+                location = location?.trim(),
+                category = category?.trim(),
+                imageUrl = imageUrl,
+                lostAt = lostAt,
+                createdAt = createdAt,
+                isClaimed = false,
+                syncedAt = null, // Mark as pending sync
+                updatedAt = System.currentTimeMillis()
+            )
+
+            // Save to local database
+            dao.upsert(entity)
+            Log.d(TAG, "Saved lost item locally: $itemId")
+
+            // Try to sync to remote (if online)
+            try {
+                val payload = mapOf(
+                    "user_id" to user.id,
+                    "title" to title.trim(),
+                    "description" to description?.trim(),
+                    "location" to location?.trim(),
+                    "category" to category?.trim(),
+                    "lost_at" to lostAt,
+                    "image_url" to imageUrl,
+                    "created_at" to createdAt
+                )
+
+                Log.d(TAG, "Attempting to sync to remote: $payload")
+                supabase.postgrest["lost_items"].insert(payload)
+                Log.d(TAG, "Sync successful - marked as synced")
+
+                // Mark as synced
+                dao.markAsSynced(itemId, System.currentTimeMillis())
+            } catch (e: Exception) {
+                Log.w(TAG, "Sync failed (likely offline), queuing for later: ${e.message}")
+                // Queue sync worker for eventual connectivity
+                enqueueLostItemSync(context, itemId)
+            }
+
+            // Return local object for UI refresh
+            entity.toLostItem()
         }
-
-        val payload = mapOf(
-            "user_id" to user.id,
-            "title" to title.trim(),
-            "description" to description?.trim(),
-            "location" to location?.trim(),
-            "category" to category?.trim(),
-            "lost_at" to lostAt,
-            "image_url" to imageUrl,
-            "created_at" to java.time.Instant.now().toString()
-        )
-
-        Log.d(TAG, "Inserting data: $payload")
-        supabase.postgrest["lost_items"].insert(payload)
-        Log.d(TAG, "Insert OK en lost_items")
-
-        // Return local object for UI refresh
-        LostItem(
-            id = UUID.randomUUID().toString(),
-            userId = user.id,
-            title = title.trim(),
-            description = description?.trim(),
-            location = location?.trim(),
-            category = category?.trim(),
-            imageUrl = imageUrl,
-            lostAt = lostAt,
-            createdAt = java.time.Instant.now().toString()
-        )
     }
+
+    /**
+     * Extension function to convert LostItemEntity to LostItem model
+     */
+    private fun LostItemEntity.toLostItem(): LostItem = LostItem(
+        id = id,
+        userId = userId,
+        title = title,
+        description = description,
+        location = location,
+        category = category,
+        imageUrl = imageUrl,
+        lostAt = lostAt,
+        createdAt = createdAt,
+        isClaimed = isClaimed,
+        claimedById = claimedById,
+        claimedAt = claimedAt
+    )
 
     // La dejamos lista por si luego volvemos a habilitar subir imagen
     override suspend fun uploadImage(imageFile: File, userId: String): Result<String> = runCatching {
@@ -124,10 +181,104 @@ class LostItemsRepositoryImpl : LostItemsRepository {
         .observeOn(AndroidSchedulers.mainThread()) // 2. Deliver result to the Main thread
     }
 
-    override suspend fun getLostItems(): Result<List<LostItem>> = runCatching {
-        Log.d(TAG, "Fetching lost items from database")
+    override suspend fun getLostItems(): Result<List<LostItem>> = withContext(Dispatchers.IO) {
+        runCatching {
+            // Check TTL: if local data is stale, try to refresh
+            val ttlThreshold = System.currentTimeMillis() - ttlMs
+            val staleItems = dao.getStaleItems(ttlThreshold)
+
+            if (staleItems.isNotEmpty()) {
+                Log.d(TAG, "Found ${staleItems.size} stale items, attempting refresh")
+                try {
+                    // Try to refresh from remote
+                    refreshFromRemote()
+                } catch (e: Exception) {
+                    Log.w(TAG, "Refresh failed (likely offline), using cached data: ${e.message}")
+                }
+            } else {
+                Log.d(TAG, "Local data is fresh, skipping remote fetch")
+            }
+
+            // Always return local data (offline-first)
+            val entities = dao.getAll()
+            val items = entities.map { it.toLostItem() }
+            Log.d(TAG, "Retrieved ${items.size} lost items (from local cache)")
+            items
+        }
+    }
+
+    /**
+     * Observe lost items as Flow (for reactive UI updates)
+     */
+    fun observeLostItems(): Flow<List<LostItem>> = dao.observeAll().map { entities ->
+        entities.map { it.toLostItem() }
+    }
+
+    /**
+     * Refresh data from remote and update local cache
+     */
+    suspend fun refreshFromRemote() = withContext(Dispatchers.IO) {
+        Log.d(TAG, "Refreshing lost items from remote")
         val items = supabase.postgrest["lost_items"].select().decodeList<LostItem>()
-        Log.d(TAG, "Retrieved ${items.size} lost items")
-        items
+        Log.d(TAG, "Retrieved ${items.size} items from remote")
+
+        val entities = items.map { item ->
+            LostItemEntity(
+                id = item.id,
+                userId = item.userId,
+                title = item.title,
+                description = item.description,
+                location = item.location,
+                category = item.category,
+                imageUrl = item.imageUrl,
+                lostAt = item.lostAt,
+                createdAt = item.createdAt,
+                isClaimed = item.isClaimed,
+                claimedById = item.claimedById,
+                claimedAt = item.claimedAt,
+                syncedAt = System.currentTimeMillis(), // Mark as synced
+                updatedAt = System.currentTimeMillis()
+            )
+        }
+
+        dao.upsertAll(entities)
+        Log.d(TAG, "Updated local cache with ${entities.size} items")
+    }
+
+    /**
+     * Sync pending items to remote (used by worker)
+     */
+    suspend fun syncPendingItems(): Result<Int> = withContext(Dispatchers.IO) {
+        runCatching {
+            val pending = dao.getPendingSync()
+            Log.d(TAG, "Syncing ${pending.size} pending items")
+
+            var syncedCount = 0
+            for (entity in pending) {
+                try {
+                    val payload = mapOf(
+                        "user_id" to entity.userId,
+                        "title" to entity.title,
+                        "description" to entity.description,
+                        "location" to entity.location,
+                        "category" to entity.category,
+                        "lost_at" to entity.lostAt,
+                        "image_url" to entity.imageUrl,
+                        "created_at" to entity.createdAt
+                    )
+
+                    supabase.postgrest["lost_items"].insert(payload)
+                    dao.markAsSynced(entity.id, System.currentTimeMillis())
+                    syncedCount++
+                    Log.d(TAG, "Synced item: ${entity.id}")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to sync item ${entity.id}: ${e.message}")
+                    // Continue with next item
+                }
+            }
+
+            Log.d(TAG, "Sync complete: $syncedCount/${pending.size} items synced")
+            syncedCount
+        }
     }
 }

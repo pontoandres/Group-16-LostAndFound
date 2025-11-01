@@ -42,3 +42,48 @@ fun enqueueBqRefreshLast30Days(context: Context, limit: Int = 10) {
     WorkManager.getInstance(context)
         .enqueueUniqueWork("bq_refresh_last30", ExistingWorkPolicy.REPLACE, req)
 }
+
+/**
+ * Enqueue sync worker for a specific lost item
+ * Uses eventual connectivity: only runs when NetworkType.CONNECTED
+ * Implements exponential backoff for retries
+ */
+fun enqueueLostItemSync(context: Context, itemId: String) {
+    val data = workDataOf("itemId" to itemId)
+
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED) // Only run when online
+        .build()
+
+    val req = OneTimeWorkRequestBuilder<LostItemSyncWorker>()
+        .setInputData(data)
+        .setConstraints(constraints)
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+        .addTag("lost_item_sync")
+        .build()
+
+    WorkManager.getInstance(context)
+        .enqueue(req)
+    
+    android.util.Log.d("LostItemSync", "Queued sync for item: $itemId")
+}
+
+/**
+ * Enqueue sync worker for all pending lost items
+ */
+fun enqueueLostItemSyncAll(context: Context) {
+    val constraints = Constraints.Builder()
+        .setRequiredNetworkType(NetworkType.CONNECTED)
+        .build()
+
+    val req = OneTimeWorkRequestBuilder<LostItemSyncWorker>()
+        .setConstraints(constraints)
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 30, TimeUnit.SECONDS)
+        .addTag("lost_item_sync_all")
+        .build()
+
+    WorkManager.getInstance(context)
+        .enqueueUniqueWork("lost_item_sync_all", ExistingWorkPolicy.KEEP, req)
+    
+    android.util.Log.d("LostItemSync", "Queued sync for all pending items")
+}
