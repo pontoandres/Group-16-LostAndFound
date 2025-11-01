@@ -59,7 +59,10 @@ dependencies {
     // MVVM / coroutines / lifecycle
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
-    //implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    
+    // DataStore (for ItemCache)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")
@@ -94,7 +97,7 @@ dependencies {
     // ML Kit for image analysis
     implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation("com.google.mlkit:object-detection:17.0.1")
-    // Lightweight image loader
+    //Lightweight image loader
     implementation("io.coil-kt:coil:2.6.0")
     // Data storing
     implementation("androidx.datastore:datastore-preferences:1.1.1")

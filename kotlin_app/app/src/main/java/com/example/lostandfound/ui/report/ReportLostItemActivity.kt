@@ -182,6 +182,9 @@ class ReportLostItemActivity : AppCompatActivity() {
                 applySuggestion(primarySuggestion)
             }
 
+            // Display enhanced attributes for primary suggestion
+            displayEnhancedAttributes(primarySuggestion)
+
             // Show additional suggestions if available
             if (suggestions.size > 1) {
                 binding.layoutAdditionalSuggestions.visibility = View.VISIBLE
@@ -216,12 +219,42 @@ class ReportLostItemActivity : AppCompatActivity() {
             binding.txtDescriptionLabel.layoutParams = layoutParams
         }
     }
+    
+    private fun displayEnhancedAttributes(suggestion: ItemSuggestion) {
+        val attributesParts = mutableListOf<String>()
+        
+        suggestion.color?.let { attributesParts.add("Color: $it") }
+        suggestion.condition?.let { attributesParts.add("Condition: $it") }
+        suggestion.size?.let { attributesParts.add("Size: $it") }
+        
+        if (suggestion.distinctiveFeatures.isNotEmpty()) {
+            attributesParts.add("Features: ${suggestion.distinctiveFeatures.joinToString(", ")}")
+        }
+        
+        if (attributesParts.isNotEmpty()) {
+            binding.txtAttributes.text = attributesParts.joinToString(" • ")
+            binding.txtAttributes.visibility = View.VISIBLE
+        } else {
+            binding.txtAttributes.visibility = View.GONE
+        }
+        
+        // Display detailed caption if available
+        suggestion.detailedCaption?.let { caption ->
+            binding.txtDetailedCaption.text = caption
+            binding.txtDetailedCaption.visibility = View.VISIBLE
+        } ?: run {
+            binding.txtDetailedCaption.visibility = View.GONE
+        }
+    }
 
     private fun applySuggestion(suggestion: ItemSuggestion) {
         val (title, description, category) = viewModel.applySuggestion(suggestion)
 
         binding.etTitle.setText(title)
-        binding.etDescription.setText(description ?: "")
+        
+        // Use detailed caption if available, otherwise use basic description
+        val descriptionText = suggestion.detailedCaption ?: suggestion.description ?: description ?: ""
+        binding.etDescription.setText(descriptionText)
 
         // Set category in spinner
         val categories = viewModel.categories.value ?: emptyList()
