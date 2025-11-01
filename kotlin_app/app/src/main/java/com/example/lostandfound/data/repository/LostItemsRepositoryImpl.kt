@@ -1,7 +1,9 @@
 package com.example.lostandfound.data.repository
 
 import android.content.Context
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.example.lostandfound.SupabaseProvider
 import com.example.lostandfound.data.local.DbProvider
 import com.example.lostandfound.data.local.LostItemDao
@@ -37,6 +39,7 @@ class LostItemsRepositoryImpl(
     // Si luego volvemos a subir imágenes, ajusta el nombre real del bucket
     private val BUCKET_NAME = "lost-items"
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override suspend fun createLostItem(
         title: String,
         description: String?,
@@ -222,9 +225,10 @@ class LostItemsRepositoryImpl(
         val items = supabase.postgrest["lost_items"].select().decodeList<LostItem>()
         Log.d(TAG, "Retrieved ${items.size} items from remote")
 
+
         val entities = items.map { item ->
             LostItemEntity(
-                id = item.id,
+                id = item.id ?: UUID.randomUUID().toString(),
                 userId = item.userId,
                 title = item.title,
                 description = item.description,
