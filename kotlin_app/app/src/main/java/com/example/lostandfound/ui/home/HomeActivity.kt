@@ -47,6 +47,7 @@ class HomeActivity : BaseActivity() {
                 .putExtra("isOwner", false)
                 .putExtra("imageUrl", item.imageUrl)
                 .putExtra("createdAt", item.createdAt)
+                .putExtra("itemId", item.id)
 
             startActivity(intent)
         }

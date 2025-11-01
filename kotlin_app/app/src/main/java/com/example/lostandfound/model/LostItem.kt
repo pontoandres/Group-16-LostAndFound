@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 
 @Serializable
 data class LostItem(
-    val id: String,
+    val id: String?,
     @SerialName("user_id")
     val userId: String,
     val title: String,
