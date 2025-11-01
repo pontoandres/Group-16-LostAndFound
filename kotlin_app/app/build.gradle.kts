@@ -37,9 +37,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
         jvmTarget = "17"
     }
+}
+
+// ✅ Usa Java 17 para Kotlin también
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -79,7 +85,7 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.3.0")
 
     // Serialización (alineada con Kotlin 2.2.x)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    // implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
     implementation("androidx.browser:browser") {
         version { strictly("1.8.0") }
@@ -87,15 +93,38 @@ dependencies {
 
     // Image handling
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    
+
     // ML Kit for image analysis
     implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation("com.google.mlkit:object-detection:17.0.1")
     //Lightweight image loader
     implementation("io.coil-kt:coil:2.6.0")
-    
-    // RxJava for reactive programming (Concurrency Technique #4)
+    // Data storing
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+
+    // WorkManager
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+
+    // Coroutines
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+
+    // OkHttp (cache HTTP)
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Kotlinx Serialization (si usas jan.supabase con serialization)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // RxJava / RxAndroid / RxBinding (para debounce de filtros)
     implementation("io.reactivex.rxjava3:rxjava:3.1.8")
-    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
     implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+    implementation("com.jakewharton.rxbinding4:rxbinding:4.0.0") // para EditText textChanges()
+
+    // MPAndroidChart (bar chart)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

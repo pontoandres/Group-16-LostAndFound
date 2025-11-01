@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -15,9 +16,24 @@ import com.example.lostandfound.ui.common.BaseActivity
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 
+import com.example.lostandfound.data.remote.ConnectivityMonitor
+import com.example.lostandfound.data.remote.ConnectionState
+import com.example.lostandfound.workers.enqueueBqRefreshLast30Days
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch as ktxLaunch
+import com.jakewharton.rxbinding4.widget.textChanges
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
+import io.reactivex.rxjava3.disposables.CompositeDisposable
+import java.util.concurrent.TimeUnit
+
 class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
+  
+    private lateinit var binding: ActivityHomeBinding
+    private val bag = CompositeDisposable() // Rx
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -28,8 +44,16 @@ class HomeActivity : BaseActivity() {
         val rv = findViewById<RecyclerView>(R.id.rvItems)
         val edt = findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.edtSearch)
 
+   
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityHomeBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupToolbar()
+
         adapter = LostItemAdapter { item ->
-            // Usa el modelo de Esteban: getName(), getPostedBy(), getImageRes()
             val intent = Intent(
                 this,
                 com.example.lostandfound.ui.detail.ItemDetailActivity::class.java
@@ -38,43 +62,57 @@ class HomeActivity : BaseActivity() {
                 .putExtra("description", item.description)
                 .putExtra("postedBy", item.getPostedBy())
                 .putExtra("imageRes", item.getImageRes())
-                // si tienes sesión, calcula dueño real: currentUserId == item.userId
                 .putExtra("isOwner", false)
-
+                .putExtra("imageUrl", item.imageUrl)
+                .putExtra("createdAt", item.createdAt)
             startActivity(intent)
         }
 
-        rv.layoutManager = GridLayoutManager(this, 2)
-        rv.adapter = adapter
+        binding.rvItems.layoutManager = GridLayoutManager(this, 2)
+        binding.rvItems.adapter = adapter
 
+        // -- RxJava debounce en búsqueda (cumple RxKotlin)
+        bag.add(
+            binding.edtSearch.textChanges()
+                .debounce(300, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe { seq -> adapter.filterBy(seq?.toString().orEmpty()) }
+        )
+
+        // Cargar items como ya tenías
         loadLostItems()
 
-        edt.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                adapter.filterBy(s?.toString().orEmpty())
+        // 1) Encolar la BQ (background) al abrir Home
+        enqueueBqRefreshLast30Days(applicationContext)
+
+        // 2) Re-encolar cuando vuelva la conectividad (Callbacks → Flow)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                ConnectivityMonitor.observe(applicationContext).collectLatest { state ->
+                    if (state == ConnectionState.Available) {
+                        enqueueBqRefreshLast30Days(applicationContext)
+                    }
+                }
             }
-            override fun afterTextChanged(s: Editable?) {}
-        })
+        }
+    }
+
+    override fun onDestroy() {
+        bag.clear()
+        super.onDestroy()
     }
 
     private fun loadLostItems() {
         lifecycleScope.launch {
             try {
-                // Decodifica con el modelo de Esteban
                 val lostItems = SupabaseProvider.client
-                    .postgrest["lost_items"]
-                    .select()
+                    .postgrest["lost_items"].select()
                     .decodeList<LostItem>()
 
                 val profiles = SupabaseProvider.client
-                    .postgrest["profiles"]
-                    .select()
+                    .postgrest["profiles"].select()
                     .decodeList<Profile>()
 
-                // En Esteban: el campo es userId (no user_id) y no existe postedBy.
-                // Para mostrar el nombre del usuario en UI, guardamos en legacyPostedBy
-                // para que getPostedBy() lo tome.
                 val mergedItems = lostItems.map { item ->
                     val user = profiles.find { it.id == item.userId }
                     item.copy(legacyPostedBy = user?.name ?: "Unknown")
@@ -87,4 +125,6 @@ class HomeActivity : BaseActivity() {
             }
         }
     }
+
+
 }
