@@ -4,16 +4,15 @@
     import android.os.Bundle
     import androidx.appcompat.app.AppCompatActivity
     import com.example.lostandfound.R
-    import com.google.android.material.appbar.MaterialToolbar
-    import android.widget.ImageView
-    import android.widget.LinearLayout
-    import android.widget.TextView
     import com.example.lostandfound.ui.claimobject.ClaimObjectActivity
-    import com.google.android.material.textfield.TextInputEditText
     import coil.load
-    import android.view.View
     import android.widget.Toast
     import com.example.lostandfound.databinding.ActivityItemDetailBinding
+    import com.example.lostandfound.model.LostItem
+    import com.example.lostandfound.data.ItemCache
+    import kotlinx.coroutines.MainScope
+    import kotlinx.coroutines.launch
+
 
     class ItemDetailActivity : AppCompatActivity() {
 
@@ -36,6 +35,7 @@
             //val imageRes = intent.getIntExtra("imageRes", 0)
             val isOwner = intent.getBooleanExtra("isOwner", true)
             val imageUrl = intent.getStringExtra("imageUrl")
+            val createdAt = intent.getStringExtra("createdAt")
 
             // Bind UI
             binding.txtItemName.text = name
@@ -75,5 +75,18 @@
                     // TODO: validar código (prototipo: solo mostrar toast)
                     Toast.makeText(this, "Feature in progress… Code: $code", Toast.LENGTH_SHORT).show()
                 }
+
+            MainScope().launch {
+                val item = LostItem(
+                    id = name + postedBy,
+                    userId = postedBy,
+                    title = name,
+                    description = desc,
+                    imageUrl = imageUrl,
+                    createdAt = createdAt
+                )
+                ItemCache.saveItem(this@ItemDetailActivity, item)
+            }
+
         }
     }

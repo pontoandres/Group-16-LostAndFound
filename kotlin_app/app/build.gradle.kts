@@ -88,6 +88,10 @@ dependencies {
     // ML Kit for image analysis
     implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation("com.google.mlkit:object-detection:17.0.1")
-    //Lightweight image loader
+    // Lightweight image loader
     implementation("io.coil-kt:coil:2.6.0")
+    // Data storing
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
 }
