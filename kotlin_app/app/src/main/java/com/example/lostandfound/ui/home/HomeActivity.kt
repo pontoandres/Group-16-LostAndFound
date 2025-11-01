@@ -126,10 +126,21 @@ class HomeActivity : BaseActivity() {
                 // Back on Main dispatcher for UI updates
                 adapter.submitList(mergedItems)
             } catch (e: Exception) {
+                val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
                 // Error handling on Main thread for UI updates
-                android.util.Log.e("HomeActivity", "Error loading lost items", e)
-                Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
+                if (cached.isNotEmpty()) {
+
+                    adapter.submitList(cached)
+
+                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
+
+                } else {
+                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
+                    android.util.Log.e("HomeActivity", "Error loading lost items", e)
+                    Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+
             }
         }
     }
