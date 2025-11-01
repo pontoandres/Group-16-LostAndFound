@@ -1,6 +1,7 @@
 package com.example.lostandfound.ui.home
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,6 +13,7 @@ import com.example.lostandfound.databinding.ActivityHomeBinding
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
+import com.example.lostandfound.utils.ConnectivityReceiver
 import io.github.jan.supabase.postgrest.postgrest
 import kotlinx.coroutines.launch
 
@@ -19,6 +21,7 @@ class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
     private lateinit var binding: ActivityHomeBinding
+    private lateinit var connectivityReceiver: ConnectivityReceiver
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,6 +67,18 @@ class HomeActivity : BaseActivity() {
             }
             override fun afterTextChanged(s: Editable?) {}
         })
+    }
+
+    override fun onStart() {
+        super.onStart()
+        connectivityReceiver = ConnectivityReceiver()
+        val filter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        registerReceiver(connectivityReceiver, filter)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(connectivityReceiver)
     }
 
     private fun loadLostItems() {

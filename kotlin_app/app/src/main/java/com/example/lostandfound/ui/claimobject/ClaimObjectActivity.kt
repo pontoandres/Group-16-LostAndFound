@@ -77,7 +77,7 @@ class ClaimObjectActivity : BaseActivity() {
                     Log.d("ClaimDebug", "User ID: $userId, Item ID: $itemId, Message: $message")
 
                     lifecycleScope.launch {
-                        pendingClaimDao.insertClaim(PendingClaim(userId = userId, itemId = itemId, message = message, code = generateClaimCode(), status = "PENDING" ))
+                        pendingClaimDao.insertClaim(PendingClaim(userId = userId, itemId = itemId, message = message, code = generateClaimCode(), status = "PENDING"))
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@ClaimObjectActivity, "Claim saved locally. Once you reestablish connection it will be uploaded automatically", Toast.LENGTH_LONG).show()
                         }
