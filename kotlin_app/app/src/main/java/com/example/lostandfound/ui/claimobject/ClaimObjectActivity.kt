@@ -70,16 +70,16 @@ class ClaimObjectActivity : BaseActivity() {
             }
 
             if (message.isNotEmpty()) {
-                Toast.makeText(this, "entered message not empty", Toast.LENGTH_SHORT).show()
+
                 if (!isOnline()) {
-                    Toast.makeText(this, "entered offline mode", Toast.LENGTH_SHORT).show()
+
 
                     Log.d("ClaimDebug", "User ID: $userId, Item ID: $itemId, Message: $message")
 
                     lifecycleScope.launch {
                         pendingClaimDao.insertClaim(PendingClaim(userId = userId, itemId = itemId, message = message, code = generateClaimCode(), status = "PENDING" ))
                         withContext(Dispatchers.Main) {
-                            Toast.makeText(this@ClaimObjectActivity, "Claim saved locally", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@ClaimObjectActivity, "Claim saved locally. Once you reestablish connection it will be uploaded automatically", Toast.LENGTH_LONG).show()
                         }
                         Log.d("ClaimDebug", "Inserted Claim: User ID: $userId, Item ID: $itemId, Message: $message")
                     }
