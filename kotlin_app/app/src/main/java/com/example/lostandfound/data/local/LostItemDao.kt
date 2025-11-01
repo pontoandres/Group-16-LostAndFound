@@ -61,7 +61,7 @@ interface LostItemDao {
      * Mark item as synced
      */
     @Query("UPDATE lost_items_cache SET syncedAt = :timestamp WHERE id = :itemId")
-    suspend fun markAsSynced(itemId: String, timestamp: Long)
+    suspend fun markAsSynced(itemId: String?, timestamp: Long)
     
     /**
      * Delete item by ID

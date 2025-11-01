@@ -1,6 +1,7 @@
 package com.example.lostandfound.ui.home
 
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.widget.Toast
 import androidx.lifecycle.Lifecycle
@@ -14,6 +15,7 @@ import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
+import com.example.lostandfound.utils.ConnectivityReceiver
 import com.example.lostandfound.workers.enqueueBqRefreshLast30Days
 import com.jakewharton.rxbinding4.widget.textChanges
 import io.github.jan.supabase.postgrest.postgrest
@@ -28,8 +30,8 @@ import java.util.concurrent.TimeUnit
 class HomeActivity : BaseActivity() {
 
     private lateinit var adapter: LostItemAdapter
-  
     private lateinit var binding: ActivityHomeBinding
+    private lateinit var connectivityReceiver: ConnectivityReceiver
     private val bag = CompositeDisposable() // Rx
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,6 +53,8 @@ class HomeActivity : BaseActivity() {
                 .putExtra("isOwner", false)
                 .putExtra("imageUrl", item.imageUrl)
                 .putExtra("createdAt", item.createdAt)
+                .putExtra("itemId", item.id)
+
             startActivity(intent)
         }
 
@@ -83,6 +87,18 @@ class HomeActivity : BaseActivity() {
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        connectivityReceiver = ConnectivityReceiver()
+        val filter = IntentFilter("android.net.conn.CONNECTIVITY_CHANGE")
+        registerReceiver(connectivityReceiver, filter)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        unregisterReceiver(connectivityReceiver)
+    }
+
     override fun onDestroy() {
         bag.clear()
         super.onDestroy()
@@ -110,10 +126,21 @@ class HomeActivity : BaseActivity() {
                 // Back on Main dispatcher for UI updates
                 adapter.submitList(mergedItems)
             } catch (e: Exception) {
+                val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
                 // Error handling on Main thread for UI updates
-                android.util.Log.e("HomeActivity", "Error loading lost items", e)
-                Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
-                e.printStackTrace()
+                if (cached.isNotEmpty()) {
+
+                    adapter.submitList(cached)
+
+                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
+
+                } else {
+                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
+                    android.util.Log.e("HomeActivity", "Error loading lost items", e)
+                    Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
+                    e.printStackTrace()
+                }
+
             }
         }
     }

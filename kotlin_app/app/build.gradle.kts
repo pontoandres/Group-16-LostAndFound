@@ -3,6 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("kotlin-parcelize")
+    id("kotlin-kapt")
 }
 
 android {
@@ -37,15 +38,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-
     kotlinOptions {
         jvmTarget = "17"
     }
-}
-
-// ✅ Usa Java 17 para Kotlin también
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
@@ -60,9 +55,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.6")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-    
-    // DataStore (for ItemCache)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     // CameraX
     implementation("androidx.camera:camera-core:1.3.4")
@@ -93,19 +85,20 @@ dependencies {
 
     // Image handling
     implementation("com.github.bumptech.glide:glide:4.16.0")
-
+    
     // ML Kit for image analysis
     implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation("com.google.mlkit:object-detection:17.0.1")
-    //Lightweight image loader
+    // Lightweight image loader
     implementation("io.coil-kt:coil:2.6.0")
     // Data storing
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     //implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("androidx.room:room-runtime:2.8.1")
+    implementation("androidx.room:room-ktx:2.8.1")
+    kapt("androidx.room:room-compiler:2.8.1")
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:2.9.0")

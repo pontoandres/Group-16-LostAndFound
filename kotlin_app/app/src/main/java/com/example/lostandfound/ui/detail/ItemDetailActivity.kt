@@ -36,6 +36,7 @@
             val isOwner = intent.getBooleanExtra("isOwner", true)
             val imageUrl = intent.getStringExtra("imageUrl")
             val createdAt = intent.getStringExtra("createdAt")
+            val itemId = intent.getStringExtra("itemId")
 
             // Bind UI
             binding.txtItemName.text = name
@@ -61,6 +62,7 @@
                         putExtra("description", desc)
                         putExtra("postedBy", postedBy)
                         putExtra("imageUrl", imageUrl)
+                        putExtra("itemId", itemId)
                     }
                     startActivity(intent)
                 }
@@ -78,7 +80,7 @@
 
             MainScope().launch {
                 val item = LostItem(
-                    id = name + postedBy,
+                    id = itemId,
                     userId = postedBy,
                     title = name,
                     description = desc,
