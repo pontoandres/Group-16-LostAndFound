@@ -71,6 +71,7 @@ class _ForgotPasswordForm extends StatelessWidget {
               const Text("Email", style: _labelStyle),
               const SizedBox(height: 5),
 
+            
               FutureBuilder<String?>(
                 future: vm.prefillEmailFuture,
                 builder: (context, snap) {
@@ -83,7 +84,6 @@ class _ForgotPasswordForm extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-             
               Consumer<ForgotPasswordViewModel>(
                 builder: (_, model, __) {
                   return StreamBuilder<bool>(
@@ -102,8 +102,8 @@ class _ForgotPasswordForm extends StatelessWidget {
                           leading: const Icon(Icons.wifi_off),
                           actions: [
                             TextButton(
-                              onPressed: () =>
-                                  ScaffoldMessenger.of(context).hideCurrentMaterialBanner(),
+                              onPressed: () => ScaffoldMessenger.of(context)
+                                  .hideCurrentMaterialBanner(),
                               child: const Text('OK'),
                             ),
                           ],
@@ -116,14 +116,14 @@ class _ForgotPasswordForm extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              
+            
               Consumer<ForgotPasswordViewModel>(
                 builder: (_, model, __) {
                   return SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
-                      onPressed: (model.isLoading)
+                      onPressed: model.isLoading
                           ? null
                           : () async {
                               final success = await model.recover();
@@ -132,14 +132,17 @@ class _ForgotPasswordForm extends StatelessWidget {
                               if (success) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Se ha enviado un correo de recuperación.'),
+                                    content: Text(
+                                      'Se ha enviado un correo de recuperación.',
+                                    ),
                                   ),
                                 );
                                 Navigator.pushNamed(context, '/login');
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text(model.errorMessage ?? 'Error'),
+                                    content: Text(
+                                        model.errorMessage ?? 'Error'),
                                   ),
                                 );
                               }
