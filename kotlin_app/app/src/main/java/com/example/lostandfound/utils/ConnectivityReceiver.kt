@@ -26,7 +26,7 @@ class ConnectivityReceiver: BroadcastReceiver() {
 
                 for (claim in pendingClaims) {
                     try {
-                        Log.d("ConnectivityDebug", "Uploading claim ${claim.localId}")
+                        Log.d("ConnectivityDebug", "Uploading claim ${claim.localId} w uploadType = ${claim.uploadType}")
                         SupabaseProvider.client.from("claims").insert(
                             ClaimUploadOff(
                                 userId = claim.userId,
@@ -34,7 +34,8 @@ class ConnectivityReceiver: BroadcastReceiver() {
                                 message = claim.message,
                                 code = claim.code,
                                 status = claim.status,
-                                createdAt = claim.createdAt
+                                createdAt = claim.createdAt,
+                                uploadType = claim.uploadType
                             )
                         )
 

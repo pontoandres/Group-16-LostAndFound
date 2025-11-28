@@ -1,5 +1,6 @@
 package com.example.lostandfound.data.local.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.SerialName
@@ -24,5 +25,8 @@ data class PendingClaim (
     val status: String = "PENDING", // or VERIFIED, REJECTED
 
     @SerialName("created_at")
-    val createdAt: String? = null
+    val createdAt: String? = null,
+
+    @SerialName("upload_type")
+    val uploadType: String? = null
 )

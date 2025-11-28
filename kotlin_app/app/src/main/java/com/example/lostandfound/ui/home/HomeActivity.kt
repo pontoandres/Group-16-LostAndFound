@@ -39,6 +39,12 @@ class HomeActivity : BaseActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.swipeRefresh.setOnRefreshListener {
+            loadLostItems()
+
+            binding.swipeRefresh.isRefreshing = false
+        }
+
         setupToolbar()
 
         adapter = LostItemAdapter { item ->
