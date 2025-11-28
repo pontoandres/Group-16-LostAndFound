@@ -78,6 +78,7 @@ class _FeedBodyState extends State<_FeedBody> {
           ),
         ),
       ),
+
       drawer: Drawer(
         child: ListView(
           children: [
@@ -85,6 +86,7 @@ class _FeedBodyState extends State<_FeedBody> {
               decoration: BoxDecoration(color: Colors.blueGrey),
               child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
             ),
+
             ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistics'),
@@ -93,6 +95,7 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.category_outlined),
               title: const Text('Category Statistics'),
@@ -101,6 +104,7 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.categoryStats);
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.change_circle),
               title: const Text('Password Changes (by Faculty)'),
@@ -109,9 +113,20 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
               },
             ),
+
+            /////
+            ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Reports by Hour'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.reportsByHour);
+              },
+            ),
           ],
         ),
       ),
+
       body: RefreshIndicator(
         onRefresh: () => context.read<FeedViewModel>().load(),
         child: Builder(
@@ -171,6 +186,7 @@ class _FeedBodyState extends State<_FeedBody> {
           },
         ),
       ),
+
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
