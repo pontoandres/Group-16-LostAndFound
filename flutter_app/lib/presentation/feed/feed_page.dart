@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
 
@@ -48,7 +49,7 @@ class _FeedBodyState extends State<_FeedBody> {
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: Colors.amber.shade100,
+          backgroundColor: Colors.amber,
         ),
       );
 
@@ -62,7 +63,9 @@ class _FeedBodyState extends State<_FeedBody> {
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<FeedViewModel>();
+    final items = context.select<FeedViewModel, List<FeedItem>>((vm) => vm.items);
+    final isLoading = context.select<FeedViewModel, bool>((vm) => vm.isLoading);
+    final error = context.select<FeedViewModel, String?>((vm) => vm.error);
 
     return Scaffold(
       appBar: AppBar(
@@ -91,22 +94,21 @@ class _FeedBodyState extends State<_FeedBody> {
               },
             ),
             ListTile(
-  leading: const Icon(Icons.category_outlined),
-  title: const Text('Category Statistics'),
-  onTap: () {
-    Navigator.pop(context);
-    Navigator.pushNamed(context, AppRoutes.categoryStats);
-  },
-),
-  ListTile(
-    leading: const Icon(Icons.change_circle),
-    title: const Text('Password Changes (by Faculty)'),
-    onTap: () {
-      Navigator.pop(context);
-      Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
-    },
-  ),
-
+              leading: const Icon(Icons.category_outlined),
+              title: const Text('Category Statistics'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.categoryStats);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.change_circle),
+              title: const Text('Password Changes (by Faculty)'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
+              },
+            ),
           ],
         ),
       ),
@@ -114,41 +116,46 @@ class _FeedBodyState extends State<_FeedBody> {
         onRefresh: () => context.read<FeedViewModel>().load(),
         child: Builder(
           builder: (_) {
-            if (vm.isLoading && vm.items.isEmpty) {
+            if (isLoading && items.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (vm.error != null && vm.items.isEmpty) {
-              return Center(child: Text('Error: ${vm.error}'));
+            if (error != null && items.isEmpty) {
+              return Center(child: Text('Error: $error'));
             }
-            if (vm.items.isEmpty) {
+            if (items.isEmpty) {
               return const Center(child: Text('No lost items reported yet.'));
             }
 
             return ListView.separated(
               padding: const EdgeInsets.all(12),
-              itemCount: vm.items.length,
+              itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
-                final it = vm.items[i];
+                final it = items[i];
                 return Card(
                   child: ListTile(
                     leading: it.imageUrl != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: Image.network(
-                              it.imageUrl!,
+                            child: CachedNetworkImage(
+                              imageUrl: it.imageUrl!,
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                              placeholder: (_, __) => const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                              errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
                         : const Icon(Icons.search),
                     title: Text(it.title),
                     subtitle: Text([
-                      if (it.location != null && it.location!.isNotEmpty) '📍 ${it.location}',
-                      if (it.category != null && it.category!.isNotEmpty) '🏷️ ${it.category}',
-                      '🕒 ${it.createdAt.toLocal()}',
+                      if (it.location != null && it.location!.isNotEmpty) it.location!,
+                      if (it.category != null && it.category!.isNotEmpty) it.category!,
+                      it.createdAt.toLocal().toString(),
                     ].where((e) => e.isNotEmpty).join(' · ')),
                     onTap: () {
                       Navigator.pushNamed(

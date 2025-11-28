@@ -70,7 +70,6 @@ class FeedViewModel extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
 
-    
     final cached = prefs.getString('feed_cache');
     if (cached != null) {
       try {
@@ -82,16 +81,13 @@ class FeedViewModel extends ChangeNotifier {
       } catch (_) {}
     }
 
-    
     final connectivity = await Connectivity().checkConnectivity();
     if (connectivity == ConnectivityResult.none) {
-      
       isLoading = false;
       notifyListeners();
       return;
     }
 
-    // Si hay red: actualizamos desde Supabase
     try {
       final client = Supabase.instance.client;
       final res = await client
@@ -110,7 +106,7 @@ class FeedViewModel extends ChangeNotifier {
         'feed_cache',
         json.encode(items.map((e) => e.toJson()).toList()),
       );
-    } catch (e) {
+    } catch (_) {
       error = 'Offline mode — showing saved data.';
     } finally {
       isLoading = false;
