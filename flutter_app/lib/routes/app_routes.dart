@@ -1,4 +1,4 @@
-// Archivo: lib/routes/app_routes.dart
+
 
 import 'package:flutter/material.dart';
 
@@ -19,6 +19,7 @@ import '../presentation/statistics/reports_by_faculty_page.dart';
 import 'package:flutter_app/presentation/statistics/category_statistics_page.dart';
 import 'package:flutter_app/presentation/statistics/password_changes_by_faculty_page.dart';
 
+import 'package:flutter_app/presentation/statistics/reports_by_hour_page.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String reportsByFaculty = '/reports_by_faculty';
   static const String categoryStats = '/category_stats';
   static const String passwordChangesByFaculty = '/password_changes_by_faculty';
+  static const String reportsByHour = '/reports_by_hour';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -57,7 +59,7 @@ class AppRoutes {
       reportsByFaculty: (_) => const ReportsByFacultyPage(),
       categoryStats: (_) => const CategoryStatisticsPage(),
       passwordChangesByFaculty: (_) => const PasswordChangesByFacultyPage(),
-
+      reportsByHour: (_) => const ReportsByHourPage(),
     };
   }
 }
