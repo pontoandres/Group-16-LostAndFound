@@ -9,8 +9,8 @@ class FeedPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => FeedViewModel()..init(),
+    return ChangeNotifierProvider.value(
+      value: FeedViewModel.instance,
       child: const _FeedBody(),
     );
   }
@@ -29,6 +29,7 @@ class _FeedBodyState extends State<_FeedBody> {
   @override
   void initState() {
     super.initState();
+    FeedViewModel.instance.init();
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowNightWarning());
   }
 
@@ -49,14 +50,12 @@ class _FeedBodyState extends State<_FeedBody> {
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: Colors.amber,
+          backgroundColor: const Color.fromARGB(255, 201, 165, 59),
         ),
       );
 
       Future.delayed(const Duration(seconds: 6), () {
-        if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
-        }
+        if (mounted) messenger.hideCurrentMaterialBanner();
       });
     }
   }
@@ -78,7 +77,6 @@ class _FeedBodyState extends State<_FeedBody> {
           ),
         ),
       ),
-
       drawer: Drawer(
         child: ListView(
           children: [
@@ -86,7 +84,6 @@ class _FeedBodyState extends State<_FeedBody> {
               decoration: BoxDecoration(color: Colors.blueGrey),
               child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
             ),
-
             ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistics'),
@@ -95,7 +92,6 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.category_outlined),
               title: const Text('Category Statistics'),
@@ -104,7 +100,6 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.categoryStats);
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.change_circle),
               title: const Text('Password Changes (by Faculty)'),
@@ -113,8 +108,6 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
               },
             ),
-
-            /////
             ListTile(
               leading: const Icon(Icons.access_time),
               title: const Text('Reports by Hour'),
@@ -123,12 +116,19 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByHour);
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.favorite),
+              title: const Text('Liked Items'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.likedItems);
+              },
+            ),
           ],
         ),
       ),
-
       body: RefreshIndicator(
-        onRefresh: () => context.read<FeedViewModel>().load(),
+        onRefresh: () => FeedViewModel.instance.load(),
         child: Builder(
           builder: (_) {
             if (isLoading && items.isEmpty) {
@@ -157,11 +157,8 @@ class _FeedBodyState extends State<_FeedBody> {
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,
-                              placeholder: (_, __) => const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
+                              placeholder: (_, __) =>
+                                  const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
                               errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
@@ -173,11 +170,7 @@ class _FeedBodyState extends State<_FeedBody> {
                       it.createdAt.toLocal().toString(),
                     ].where((e) => e.isNotEmpty).join(' · ')),
                     onTap: () {
-                      Navigator.pushNamed(
-                        context,
-                        AppRoutes.matchDetail,
-                        arguments: it,
-                      );
+                      Navigator.pushNamed(context, AppRoutes.matchDetail, arguments: it);
                     },
                   ),
                 );
@@ -186,7 +179,6 @@ class _FeedBodyState extends State<_FeedBody> {
           },
         ),
       ),
-
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -195,7 +187,7 @@ class _FeedBodyState extends State<_FeedBody> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.lostReport)
-                  .then((_) => context.read<FeedViewModel>().load()),
+                  .then((_) => FeedViewModel.instance.load()),
               child: const Text('Report a lost item'),
             ),
           ),

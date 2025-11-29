@@ -1,6 +1,5 @@
-
-
 import 'package:flutter/material.dart';
+import '../../models/lost_item.dart';
 
 import '../presentation/login/login_page.dart';
 import '../presentation/register/register_page.dart';
@@ -18,8 +17,8 @@ import '../presentation/reset_password/reset_password_page.dart';
 import '../presentation/statistics/reports_by_faculty_page.dart';
 import 'package:flutter_app/presentation/statistics/category_statistics_page.dart';
 import 'package:flutter_app/presentation/statistics/password_changes_by_faculty_page.dart';
-
 import 'package:flutter_app/presentation/statistics/reports_by_hour_page.dart';
+import 'package:flutter_app/presentation/like/liked_items_screen.dart';
 
 class AppRoutes {
   static const String login = '/login';
@@ -40,6 +39,7 @@ class AppRoutes {
   static const String categoryStats = '/category_stats';
   static const String passwordChangesByFaculty = '/password_changes_by_faculty';
   static const String reportsByHour = '/reports_by_hour';
+  static const String likedItems = '/liked_items';
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -60,6 +60,9 @@ class AppRoutes {
       categoryStats: (_) => const CategoryStatisticsPage(),
       passwordChangesByFaculty: (_) => const PasswordChangesByFacultyPage(),
       reportsByHour: (_) => const ReportsByHourPage(),
+      likedItems: (context) {
+      return const LikedItemsScreen(); 
+     },
     };
   }
 }
