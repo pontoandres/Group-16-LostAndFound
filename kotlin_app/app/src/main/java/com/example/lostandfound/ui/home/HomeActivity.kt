@@ -3,6 +3,7 @@ package com.example.lostandfound.ui.home
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -75,13 +76,13 @@ class HomeActivity : BaseActivity() {
                 .subscribe { seq -> adapter.filterBy(seq?.toString().orEmpty()) }
         )
 
-        // Cargar items como ya tenías
+        // Cargar items
         loadLostItems()
 
         // 1) Encolar la BQ (background) al abrir Home
         enqueueBqRefreshLast30Days(applicationContext)
 
-        // 2) Re-encolar cuando vuelva la conectividad (Callbacks → Flow)
+        // 2) Re-encolar cuando vuelva la conectividad
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ConnectivityMonitor.observe(applicationContext).collectLatest { state ->
@@ -132,20 +133,14 @@ class HomeActivity : BaseActivity() {
                 // Back on Main dispatcher for UI updates
                 adapter.submitList(mergedItems)
             } catch (e: Exception) {
-                val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
-                // Error handling on Main thread for UI updates
-                if (cached.isNotEmpty()) {
+                binding.txtOfflineBanner.visibility = View.VISIBLE
+                binding.rvItems.visibility = View.GONE
 
-                    adapter.submitList(cached)
-
-                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
-
-                } else {
-                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
-                    android.util.Log.e("HomeActivity", "Error loading lost items", e)
-                    Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
-                    e.printStackTrace()
-                }
+                Toast.makeText(
+                    this@HomeActivity,
+                    "You are offline. Recently viewed items are available in the menu.",
+                    Toast.LENGTH_SHORT
+                ).show()
 
             }
         }

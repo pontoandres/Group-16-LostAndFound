@@ -25,4 +25,9 @@
     <string name="link_to_post">link to post</string>
     <string name="sign_out">Sign Out</string>
     <string name="turn_on_notifications">Turn on notifications</string>
+    <string name="recently_viewed">Recently Viewed</string>
+    <string name="profile">Profile</string>
+    <string name="it_seems_you_are_offline_for_offline_functionalties_check_your_recently_viewed_items">It seems you are offline. For offline functionalties, check your Recently Viewed Items.</string>
+    <string name="items_you_opened_recently_will_appear_below">Items you opened recently will appear below</string>
+    <string name="recently_viewed_items">Recently Viewed Items</string>
 </resources>

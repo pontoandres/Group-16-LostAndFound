@@ -29,7 +29,6 @@
                 app:contentInsetStartWithNavigation="0dp"
                 app:menu="@menu/menu_home" />
 
-
             <TextView
                 android:id="@+id/txtTitle"
                 android:layout_width="match_parent"
@@ -79,6 +78,17 @@
                 android:layout_weight="1"
                 android:clipToPadding="false"
                 android:paddingBottom="8dp" />
+
+            <TextView
+                android:id="@+id/txtOfflineBanner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/brand_bg"
+                android:text="@string/it_seems_you_are_offline_for_offline_functionalties_check_your_recently_viewed_items"
+                android:textColor="@android:color/black"
+                android:padding="8dp"
+                android:textSize="14sp"
+                android:visibility="gone"/>
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
         <com.google.android.material.navigation.NavigationView
