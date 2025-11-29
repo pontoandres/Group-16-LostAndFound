@@ -13,7 +13,7 @@ import '../presentation/history/history_screen.dart';
 import '../presentation/camera/camera_screen.dart';
 import '../presentation/config/config_screen.dart';
 import '../presentation/reset_password/reset_password_page.dart';
-
+import '../presentation/my_reports/my_reports_page.dart';
 import '../presentation/statistics/reports_by_faculty_page.dart';
 import '../presentation/statistics/category_statistics_page.dart';
 import '../presentation/statistics/password_changes_by_faculty_page.dart';
@@ -37,6 +37,7 @@ class AppRoutes {
   static const String camera = '/camera';
   static const String config = '/config';
   static const String resetPassword = '/reset_password';
+  static const String myReports = '/my_reports';
 
   static const String reportsByFaculty = '/reports_by_faculty';
   static const String categoryStats = '/category_stats';
@@ -58,6 +59,7 @@ class AppRoutes {
       camera: (_) => const CameraScreen(),
       config: (_) => const ConfigScreen(),
       resetPassword: (_) => const ResetPasswordPage(),
+      myReports: (_) => const MyReportsPage(),
       reportsByFaculty: (_) => const ReportsByFacultyPage(),
       categoryStats: (_) => const CategoryStatisticsPage(),
       passwordChangesByFaculty: (_) =>
