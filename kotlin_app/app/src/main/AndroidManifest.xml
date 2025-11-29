@@ -49,6 +49,8 @@
         <activity android:name=".ui.notifications.NotificationsActivity" android:exported="false"/>
         <activity android:name=".ui.history.HistoryActivity" android:exported="false"/>
         <activity android:name=".ui.settings.SettingsActivity" android:exported="false"/>
+        <activity android:name=".ui.favorites.FavoritesActivity" android:exported="false" />
+
 
         <!-- Deep link reset password -->
         <activity

@@ -28,7 +28,12 @@ data class LostItem(
     // Legacy fields for backward compatibility
     val legacyName: String? = null,
     val legacyPostedBy: String? = null,
-    val legacyImageRes: Int? = null
+    val legacyImageRes: Int? = null,
+
+    // ===== NUEVO: campo de favoritos =====
+    // Local-only al inicio; si luego creas una columna is_favorite en Supabase,
+    // puedes agregar @SerialName("is_favorite") sin problema.
+    val isFavorite: Boolean = false
 ) {
     // Computed properties for backward compatibility
     fun getName(): String = legacyName ?: title

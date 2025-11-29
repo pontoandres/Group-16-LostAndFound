@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/top_bar.dart';
 import '../widgets/debug_nav.dart';
 import '../../theme/app_theme.dart';
@@ -38,14 +39,45 @@ class ItemDescriptionScreen extends StatelessWidget {
         child: ListView(
           children: [
             const SizedBox(height: 8),
-            Center(
-              child: Text(
-                item.title,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                 ),
-              ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    final likedItems = prefs.getStringList('liked_items') ?? [];
+
+                    if (!likedItems.contains(item.id)) {
+                      likedItems.add(item.id);
+                      await prefs.setStringList('liked_items', likedItems);
+
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Item added to Likes")),
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red.shade300,
+                    minimumSize: const Size(64, 36),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text("Like", style: TextStyle(color: Colors.white)),
+                ),
+              ],
             ),
             const SizedBox(height: 4),
             Text(createdAtText),
@@ -60,14 +92,9 @@ class ItemDescriptionScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                    ? Image.network(
-                        item.imageUrl!,
-                        fit: BoxFit.cover,
-                      )
-                    : Image.asset(
-                        'assets/images/Rectangle17.png',
-                        fit: BoxFit.cover,
-                      ),
+                    ? Image.network(item.imageUrl!, fit: BoxFit.cover)
+                    : Image.asset('assets/images/Rectangle17.png',
+                        fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 16),
