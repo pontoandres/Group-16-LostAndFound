@@ -12,8 +12,8 @@ class LongUnclaimedItemsPage extends StatelessWidget {
         .select(
           'id, title, description, place, category, image_url, status, created_at, lost_at, location',
         )
-        .eq('status', 'pending') // <-- aún no reclamados
-        .order('created_at', ascending: true) // más antiguos primero
+        .eq('status', 'pending') 
+        .order('created_at', ascending: true) 
         .limit(50);
 
     return (data as List).cast<Map<String, dynamic>>();
