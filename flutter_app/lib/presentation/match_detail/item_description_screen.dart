@@ -14,16 +14,9 @@ class ItemDescriptionScreen extends StatelessWidget {
     required this.item,
   });
 
-  // Si sigues usando rutas con arguments, registra esto en onGenerateRoute:
-  // case AppRoutes.itemDetail:
-  //   final item = settings.arguments as FeedItem;
-  //   return MaterialPageRoute(
-  //     builder: (_) => ItemDescriptionScreen(item: item),
-  //   );
 
   @override
   Widget build(BuildContext context) {
-    // Pre-formateamos el texto de la fecha una sola vez
     final createdAtText = 'Posted on: ${item.createdAt.toLocal()}';
      Future.microtask(() {
       RecentItemsService().addToRecent({

@@ -102,6 +102,14 @@ class _FeedBodyState extends State<_FeedBody> {
               child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
             ),
 
+          ListTile(
+            leading: const Icon(Icons.list_alt),
+            title: const Text('My Reports'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.myReports);
+            },
+          ),
             ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistics'),
