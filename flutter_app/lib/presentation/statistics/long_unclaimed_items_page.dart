@@ -7,7 +7,6 @@ class LongUnclaimedItemsPage extends StatelessWidget {
   Future<List<Map<String, dynamic>>> _loadData() async {
     final client = Supabase.instance.client;
 
-    // Traemos solo ítems que siguen "pendientes" (no reclamados)
     final data = await client
         .from('lost_items')
         .select(
