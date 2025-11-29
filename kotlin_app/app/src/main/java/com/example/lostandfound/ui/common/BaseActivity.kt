@@ -13,6 +13,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import com.example.lostandfound.R
 import com.example.lostandfound.ui.history.HistoryActivity
 import com.example.lostandfound.ui.home.HomeActivity
+import com.example.lostandfound.ui.myreports.MyReportsActivity
 import com.example.lostandfound.ui.notifications.NotificationsActivity
 import com.example.lostandfound.ui.profile.ProfileActivity
 import com.example.lostandfound.ui.report.ReportLostItemActivity
@@ -69,6 +70,7 @@ abstract class  BaseActivity : AppCompatActivity() {
         navigationView.setNavigationItemSelectedListener { menuItem ->
             val handled = when (menuItem.itemId) {
                 R.id.nav_home -> goIfNot<HomeActivity>()
+                R.id.nav_my_reports -> goIfNot<MyReportsActivity>()
                 R.id.nav_report -> goIfNot<ReportLostItemActivity>(finishCurrent = false)
                 R.id.nav_profile -> goIfNot<ProfileActivity>()
                 R.id.nav_notifications -> goIfNot<NotificationsActivity>()
