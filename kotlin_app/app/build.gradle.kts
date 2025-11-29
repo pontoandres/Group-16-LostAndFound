@@ -86,6 +86,9 @@ dependencies {
     // Image handling
     implementation("com.github.bumptech.glide:glide:4.16.0")
     
+    // SwipeRefreshLayout
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    
     // ML Kit for image analysis
     implementation("com.google.mlkit:image-labeling:17.0.8")
     implementation("com.google.mlkit:object-detection:17.0.1")

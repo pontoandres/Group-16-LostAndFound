@@ -21,11 +21,24 @@ interface LostItemDao {
     fun observeAll(): Flow<List<LostItemEntity>>
 
     /**
+     * Observe lost items by user ID (for My Reports)
+     * Returns Flow for reactive UI updates
+     */
+    @Query("SELECT * FROM lost_items_cache WHERE userId = :userId ORDER BY updatedAt DESC")
+    fun observeByUserId(userId: String): Flow<List<LostItemEntity>>
+    
+    /**
      * Get all items, including pending sync items
      */
     @Query("SELECT * FROM lost_items_cache ORDER BY updatedAt DESC")
     suspend fun getAll(): List<LostItemEntity>
 
+    /**
+     * Get items by user ID
+     */
+    @Query("SELECT * FROM lost_items_cache WHERE userId = :userId ORDER BY updatedAt DESC")
+    suspend fun getByUserId(userId: String): List<LostItemEntity>
+    
     /**
      * Get items pending sync (syncedAt IS NULL)
      */

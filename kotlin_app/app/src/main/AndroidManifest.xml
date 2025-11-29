@@ -43,6 +43,7 @@
         <activity android:name=".ui.report.ReportLostItemActivity" android:exported="false"/>
         <activity android:name=".ui.profile.ProfileActivity" android:exported="false"/>
         <activity android:name=".ui.home.HomeActivity" android:exported="false" android:label="UniFind"/>
+        <activity android:name=".ui.myreports.MyReportsActivity" android:exported="false" android:label="My Reports"/>
         <activity android:name=".ui.detail.ItemDetailActivity" android:exported="false" android:label="UniFind"/>
         <activity android:name=".ui.claimobject.ClaimObjectActivity" android:exported="false"/>
         <activity android:name=".ui.notifications.NotificationsActivity" android:exported="false"/>

@@ -12,10 +12,12 @@ import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.workers.enqueueLostItemSync
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.filter.*
 import io.github.jan.supabase.storage.storage
 import io.ktor.http.ContentType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -297,6 +299,62 @@ class LostItemsRepositoryImpl(
         }
     }
 
+    /**
+     * Observe user's lost items as Flow (for My Reports - reactive UI updates)
+     * Uses Flow for multithreading strategy #3
+     */
+    override fun observeUserItems(userId: String): Flow<List<LostItem>> = 
+        dao.observeByUserId(userId)
+            .map { entities ->
+                entities.map { it.toLostItem() }
+            }
+            .flowOn(Dispatchers.Default) // Process mapping on Default dispatcher
+
+    /**
+     * Refresh user's items from remote (with eventual connectivity support)
+     */
+    override suspend fun refreshUserItems(userId: String): Result<Unit> = withContext(Dispatchers.IO) {
+        runCatching {
+            Log.d(TAG, "Refreshing user items from remote for userId: $userId")
+            
+            // Fetch from Supabase filtered by user_id
+            val items = supabase.postgrest["lost_items"]
+                .select {
+                    filter {
+                        eq("user_id", userId)
+                    }
+                }
+                .decodeList<LostItem>()
+            
+            Log.d(TAG, "Retrieved ${items.size} items from remote for user")
+
+            // Update local cache
+            val entities = items.mapNotNull { item ->
+                // Skip items with null id
+                val itemId = item.id ?: return@mapNotNull null
+                LostItemEntity(
+                    id = itemId,
+                    userId = item.userId,
+                    title = item.title,
+                    description = item.description,
+                    location = item.location,
+                    category = item.category,
+                    imageUrl = item.imageUrl,
+                    lostAt = item.lostAt,
+                    createdAt = item.createdAt,
+                    isClaimed = item.isClaimed,
+                    claimedById = item.claimedById,
+                    claimedAt = item.claimedAt,
+                    syncedAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+            }
+
+            dao.upsertAll(entities)
+            Log.d(TAG, "Updated local cache with ${entities.size} user items")
+            Unit // Explicitly return Unit for Result<Unit>
+        }
+    }
     // =============== NUEVO: helpers para favoritos =================
 
     /**
