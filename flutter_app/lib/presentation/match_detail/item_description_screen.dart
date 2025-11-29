@@ -6,22 +6,30 @@ import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
 
 class ItemDescriptionScreen extends StatelessWidget {
-  const ItemDescriptionScreen({super.key});
+  final FeedItem item;
+
+  const ItemDescriptionScreen({
+    super.key,
+    required this.item,
+  });
+
+  // Si sigues usando rutas con arguments, registra esto en onGenerateRoute:
+  // case AppRoutes.itemDetail:
+  //   final item = settings.arguments as FeedItem;
+  //   return MaterialPageRoute(
+  //     builder: (_) => ItemDescriptionScreen(item: item),
+  //   );
 
   @override
   Widget build(BuildContext context) {
-    final arg = ModalRoute.of(context)?.settings.arguments;
-
-    if (arg is! FeedItem) {
-      return const Scaffold(
-        body: Center(child: Text("No item data provided")),
-      );
-    }
-
-    final item = arg;
+    // Pre-formateamos el texto de la fecha una sola vez
+    final createdAtText = 'Posted on: ${item.createdAt.toLocal()}';
 
     return Scaffold(
-      appBar: const TopBar(title: 'Goatfound', actions: [DebugNavButton()]),
+      appBar: const TopBar(
+        title: 'Goatfound',
+        actions: [DebugNavButton()],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: ListView(
@@ -37,7 +45,7 @@ class ItemDescriptionScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-            Text("Posted on: ${item.createdAt.toLocal()}"),
+            Text(createdAtText),
             const SizedBox(height: 12),
             Container(
               height: 220,
@@ -49,9 +57,14 @@ class ItemDescriptionScreen extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                    ? Image.network(item.imageUrl!, fit: BoxFit.cover)
-                    : Image.asset('assets/images/Rectangle17.png',
-                        fit: BoxFit.cover),
+                    ? Image.network(
+                        item.imageUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.asset(
+                        'assets/images/Rectangle17.png',
+                        fit: BoxFit.cover,
+                      ),
               ),
             ),
             const SizedBox(height: 16),
@@ -67,7 +80,7 @@ class ItemDescriptionScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Text(
-                item.category ?? "No description available",
+                item.category ?? 'No description available',
                 textAlign: TextAlign.center,
               ),
             ),
