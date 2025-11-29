@@ -102,6 +102,7 @@ class _FeedBodyState extends State<_FeedBody> {
         child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
       ),
 
+
       ListTile(
         leading: const Icon(Icons.list_alt),
         title: const Text('My Reports'),
@@ -111,13 +112,21 @@ class _FeedBodyState extends State<_FeedBody> {
         },
       ),
 
-      // 📌 NUEVA OPCIÓN — Long Unclaimed Items
       ListTile(
         leading: const Icon(Icons.timer_outlined),
         title: const Text('Longest Unclaimed Items'),
         onTap: () {
           Navigator.pop(context);
           Navigator.pushNamed(context, AppRoutes.longUnclaimedItems);
+        },
+      ),
+
+      ListTile(
+        leading: const Icon(Icons.calendar_view_week),
+        title: const Text('My Weekly Loss Pattern'),
+        onTap: () {
+          Navigator.pop(context);
+          Navigator.pushNamed(context, AppRoutes.myLossWeekPattern);
         },
       ),
 

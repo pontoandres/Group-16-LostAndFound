@@ -21,6 +21,9 @@ import '../presentation/statistics/reports_by_hour_page.dart';
 import '../presentation/statistics/long_unclaimed_items_page.dart';
 
 import '../viewmodels/feed/feed_viewmodel.dart'; 
+import '../presentation/my_loss_week_pattern/my_loss_week_pattern_page.dart';
+
+
 
 class AppRoutes {
   static const String login = '/login';
@@ -45,6 +48,8 @@ class AppRoutes {
   static const String passwordChangesByFaculty =
       '/password_changes_by_faculty';
   static const String reportsByHour = '/reports_by_hour';
+  static const String myLossWeekPattern = '/my_loss_week_pattern';
+
 
   static Map<String, WidgetBuilder> get routes {
     return {
@@ -66,7 +71,8 @@ class AppRoutes {
       passwordChangesByFaculty: (_) =>
           const PasswordChangesByFacultyPage(),
       reportsByHour: (_) => const ReportsByHourPage(),
-      AppRoutes.longUnclaimedItems: (_) => const LongUnclaimedItemsPage()
+      AppRoutes.longUnclaimedItems: (_) => const LongUnclaimedItemsPage(),
+      myLossWeekPattern: (_) => const MyLossWeekPatternPage(),
     };
   }
 
