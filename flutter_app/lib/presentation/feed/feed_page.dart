@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
-import '../recent/recent_items_screen.dart'; // 👈 Pantalla de recientes
+import '../recent/recent_items_screen.dart'; 
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});

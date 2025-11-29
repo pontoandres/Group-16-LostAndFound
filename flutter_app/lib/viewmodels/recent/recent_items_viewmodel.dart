@@ -22,11 +22,9 @@ class RecentItemsViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 1. Siempre cargamos primero del cache local (local storage strategy)
       items = await _service.loadCached();
       notifyListeners();
 
-      // 2. Intentamos refrescar desde Supabase si hay Internet (eventual connectivity)
       final online = await _hasInternet();
       if (!online) return;
 

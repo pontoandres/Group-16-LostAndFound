@@ -29,7 +29,6 @@ class _MyReportsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usamos context.select para limitar rebuilds (igual que en el Feed)
     final isLoading =
         context.select<MyReportsViewModel, bool>((vm) => vm.isLoading);
     final isOffline =

@@ -31,19 +31,16 @@ class MyReportsViewModel extends ChangeNotifier {
 
     final prefs = await SharedPreferences.getInstance();
 
-    // 1️⃣ CONCURRENCIA: decodificación de cache en un isolate con compute()
     final cachedJson = prefs.getString(_cacheKey);
     if (cachedJson != null) {
       try {
         final cachedItems = await compute(_decodeReports, cachedJson);
         _items = cachedItems;
-        notifyListeners(); // muestra algo rápido aunque falte la red
+        notifyListeners(); 
       } catch (_) {
-        // cache corrupta -> la ignoramos
       }
     }
 
-    // 2️⃣ EVENTUAL CONNECTIVITY: si no hay red, nos quedamos con el cache
     final status = await connectivity.checkConnectivity();
     if (status == ConnectivityResult.none) {
       isOffline = true;
@@ -52,7 +49,6 @@ class MyReportsViewModel extends ChangeNotifier {
       return;
     }
 
-    // 3️⃣ Online: sincronizamos con Supabase
     try {
       final userId = client.auth.currentUser?.id;
       if (userId == null) {
@@ -68,7 +64,6 @@ class MyReportsViewModel extends ChangeNotifier {
       final jsonList = List<Map<String, dynamic>>.from(response);
       _items = jsonList.map((e) => FeedItem.fromJson(e)).toList();
 
-      // Actualizamos cache para el próximo uso offline
       await prefs.setString(_cacheKey, json.encode(jsonList));
 
       isOffline = false;
@@ -80,7 +75,6 @@ class MyReportsViewModel extends ChangeNotifier {
     }
   }
 
-  // Función pura para el isolate
   static List<FeedItem> _decodeReports(String jsonStr) {
     final decoded = json.decode(jsonStr) as List;
     return decoded
