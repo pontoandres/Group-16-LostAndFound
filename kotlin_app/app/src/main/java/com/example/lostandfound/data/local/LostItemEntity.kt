@@ -21,8 +21,13 @@ data class LostItemEntity(
     val isClaimed: Boolean = false,
     val claimedById: String? = null,
     val claimedAt: String? = null,
+
     // Sync metadata
     val syncedAt: Long? = null, // null = pending sync, timestamp = already synced
-    val updatedAt: Long = System.currentTimeMillis() // TTL tracking
-)
+    val updatedAt: Long = System.currentTimeMillis(), // TTL tracking
 
+    // ===== NUEVO: favoritos =====
+    val isFavorite: Boolean = false,
+    val favoriteUpdatedAt: Long? = null,
+    val favoriteSyncedAt: Long? = null
+)

@@ -27,18 +27,27 @@ class LostReportViewModel extends ChangeNotifier {
   final _service = LostItemsService();
 
   late final Future<List<String>> categoriesFuture;
+
+  // STREAM para contador de caracteres  ---------------------- MICRO-OPT
   final _descRemainingCtrl = StreamController<int>.broadcast();
   Stream<int> get descRemainingStream => _descRemainingCtrl.stream;
+
+  // Timer para hacer debounce del guardado del borrador ------- MICRO-OPT
+  Timer? _draftTimer;
 
   static const _draftKey = 'lost_report_draft_v1';
 
   LostReportViewModel() {
     categoriesFuture = _loadCategories();
+
+    // Actualizar contador de descripción
     descriptionCtrl.addListener(_onDescriptionChanged);
 
+    // Guardar borrador con DEBOUNCE, no en cada tecla ------- MICRO-OPT
     for (final c in [titleCtrl, descriptionCtrl, locationCtrl, categoryCtrl]) {
-      c.addListener(_saveDraftLocally);
+      c.addListener(_scheduleDraftSave);
     }
+
     _loadDraft();
     _onDescriptionChanged();
   }
@@ -48,25 +57,51 @@ class LostReportViewModel extends ChangeNotifier {
     _descRemainingCtrl.add(remaining);
   }
 
+  // Debounce para guardado de borrador ----------------------- MICRO-OPT
+  void _scheduleDraftSave() {
+    _draftTimer?.cancel();
+    _draftTimer = Timer(const Duration(milliseconds: 400), () {
+      _saveDraftLocally();
+    });
+  }
+
   Future<List<String>> _loadCategories() async {
     try {
-      final data = await _client.from('categories').select('name').order('name');
+      final data =
+          await _client.from('categories').select('name').order('name');
       final list = (data as List)
           .map((e) => (e['name'] ?? '').toString())
           .where((e) => e.isNotEmpty)
           .toList();
       if (list.isEmpty) {
-        return ['Backpack', 'Keys', 'Card', 'Laptop', 'Headphones', 'Bottle', 'Calculator'];
+        return [
+          'Backpack',
+          'Keys',
+          'Card',
+          'Laptop',
+          'Headphones',
+          'Bottle',
+          'Calculator'
+        ];
       }
       return list;
     } catch (_) {
-      return ['Backpack', 'Keys', 'Card', 'Laptop', 'Headphones', 'Bottle', 'Calculator'];
+      return [
+        'Backpack',
+        'Keys',
+        'Card',
+        'Laptop',
+        'Headphones',
+        'Bottle',
+        'Calculator'
+      ];
     }
   }
 
   Future<void> pickImage({ImageSource source = ImageSource.gallery}) async {
     final picker = ImagePicker();
-    final XFile? picked = await picker.pickImage(source: source, maxWidth: 1280);
+    final XFile? picked =
+        await picker.pickImage(source: source, maxWidth: 1280);
     if (picked != null) {
       imageBytes = await picked.readAsBytes();
       await _saveDraftLocally();
@@ -124,8 +159,8 @@ class LostReportViewModel extends ChangeNotifier {
     final status = await Connectivity().checkConnectivity();
     if (status == ConnectivityResult.none) return false;
     try {
-      final result =
-          await InternetAddress.lookup('example.com').timeout(const Duration(seconds: 2));
+      final result = await InternetAddress.lookup('example.com')
+          .timeout(const Duration(seconds: 2));
       return result.isNotEmpty && result.first.rawAddress.isNotEmpty;
     } on SocketException {
       return false;
@@ -154,7 +189,8 @@ class LostReportViewModel extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("You can’t post an item because you don’t have Internet."),
+            content:
+                Text("You can’t post an item because you don’t have Internet."),
           ),
         );
       }
@@ -167,7 +203,8 @@ class LostReportViewModel extends ChangeNotifier {
       notifyListeners();
 
       if (imageBytes != null) {
-        imageUrl = await _service.uploadImage(bytes: imageBytes!, userId: user.id);
+        imageUrl =
+            await _service.uploadImage(bytes: imageBytes!, userId: user.id);
       }
 
       await _service.create(
@@ -186,7 +223,8 @@ class LostReportViewModel extends ChangeNotifier {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("You can’t post an item because you don’t have Internet."),
+            content:
+                Text("You can’t post an item because you don’t have Internet."),
           ),
         );
       }
@@ -217,7 +255,9 @@ class LostReportViewModel extends ChangeNotifier {
     words.sort((a, b) => b.length.compareTo(a.length));
     final top = words.take(3).toList();
     final base = top.isEmpty ? 'Lost item' : top.join(' ');
-    if (loc.trim().isEmpty) return base[0].toUpperCase() + base.substring(1);
+    if (loc.trim().isEmpty) {
+      return base[0].toUpperCase() + base.substring(1);
+    }
     return '${base[0].toUpperCase()}${base.substring(1)} at $loc';
   }
 
@@ -256,6 +296,8 @@ class LostReportViewModel extends ChangeNotifier {
     locationCtrl.dispose();
     categoryCtrl.dispose();
     _descRemainingCtrl.close();
+    _draftTimer?.cancel(); // cancelar debounce ------------- MICRO-OPT
     super.dispose();
   }
 }
+

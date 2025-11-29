@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:provider/provider.dart'; 
 import 'routes/app_routes.dart';
 import 'theme/app_theme.dart';
+import 'viewmodels/feed/feed_viewmodel.dart'; 
 
 const bool kUseBackend = true;
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
@@ -46,7 +48,12 @@ Future<void> main() async {
     });
   }
 
-  runApp(MyApp(initialRoute: initialRoute));
+  runApp(
+    ChangeNotifierProvider<FeedViewModel>.value(
+      value: FeedViewModel.instance, 
+      child: MyApp(initialRoute: initialRoute),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -62,6 +69,8 @@ class MyApp extends StatelessWidget {
       navigatorKey: appNavigatorKey,
       initialRoute: initialRoute,
       routes: AppRoutes.routes,
+      onGenerateRoute: AppRoutes.generateRoute,
     );
   }
 }
+

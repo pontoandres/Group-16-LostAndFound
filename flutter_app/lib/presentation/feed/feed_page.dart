@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../recent/recent_items_screen.dart'; 
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => FeedViewModel()..init(),
+    return ChangeNotifierProvider.value(
+      value: FeedViewModel.instance,
       child: const _FeedBody(),
     );
   }
@@ -28,6 +30,7 @@ class _FeedBodyState extends State<_FeedBody> {
   @override
   void initState() {
     super.initState();
+    FeedViewModel.instance.init();
     WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowNightWarning());
   }
 
@@ -48,21 +51,21 @@ class _FeedBodyState extends State<_FeedBody> {
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: Colors.amber.shade100,
+          backgroundColor: const Color.fromARGB(255, 236, 205, 112),
         ),
       );
 
       Future.delayed(const Duration(seconds: 6), () {
-        if (mounted) {
-          ScaffoldMessenger.of(context).hideCurrentMaterialBanner();
-        }
+        if (mounted) messenger.hideCurrentMaterialBanner();
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final vm = context.watch<FeedViewModel>();
+    final items = context.select<FeedViewModel, List<FeedItem>>((vm) => vm.items);
+    final isLoading = context.select<FeedViewModel, bool>((vm) => vm.isLoading);
+    final error = context.select<FeedViewModel, String?>((vm) => vm.error);
 
     return Scaffold(
       appBar: AppBar(
@@ -74,7 +77,22 @@ class _FeedBodyState extends State<_FeedBody> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Recently viewed items',
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RecentItemsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
+
       drawer: Drawer(
         child: ListView(
           children: [
@@ -82,6 +100,34 @@ class _FeedBodyState extends State<_FeedBody> {
               decoration: BoxDecoration(color: Colors.blueGrey),
               child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
             ),
+
+            ListTile(
+              leading: const Icon(Icons.list_alt),
+              title: const Text('My Reports'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.myReports);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: const Text('Longest Unclaimed Items'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.longUnclaimedItems);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.calendar_view_week),
+              title: const Text('My Weekly Loss Pattern'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.myLossWeekPattern);
+              },
+            ),
+
             ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistics'),
@@ -90,65 +136,90 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
               },
             ),
-            ListTile(
-  leading: const Icon(Icons.category_outlined),
-  title: const Text('Category Statistics'),
-  onTap: () {
-    Navigator.pop(context);
-    Navigator.pushNamed(context, AppRoutes.categoryStats);
-  },
-),
-  ListTile(
-    leading: const Icon(Icons.change_circle),
-    title: const Text('Password Changes (by Faculty)'),
-    onTap: () {
-      Navigator.pop(context);
-      Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
-    },
-  ),
 
+            ListTile(
+              leading: const Icon(Icons.category_outlined),
+              title: const Text('Category Statistics'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.categoryStats);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.change_circle),
+              title: const Text('Password Changes (by Faculty)'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.access_time),
+              title: const Text('Reports by Hour'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.reportsByHour);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.favorite, color: Colors.redAccent),
+              title: const Text('Liked Items'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.likedItems);
+              },
+            ),
           ],
         ),
       ),
+
       body: RefreshIndicator(
-        onRefresh: () => context.read<FeedViewModel>().load(),
+        onRefresh: () => FeedViewModel.instance.load(),
         child: Builder(
           builder: (_) {
-            if (vm.isLoading && vm.items.isEmpty) {
+            if (isLoading && items.isEmpty) {
               return const Center(child: CircularProgressIndicator());
             }
-            if (vm.error != null && vm.items.isEmpty) {
-              return Center(child: Text('Error: ${vm.error}'));
+            if (error != null && items.isEmpty) {
+              return Center(child: Text('Error: $error'));
             }
-            if (vm.items.isEmpty) {
+            if (items.isEmpty) {
               return const Center(child: Text('No lost items reported yet.'));
             }
 
             return ListView.separated(
               padding: const EdgeInsets.all(12),
-              itemCount: vm.items.length,
+              itemCount: items.length,
               separatorBuilder: (_, __) => const SizedBox(height: 10),
               itemBuilder: (_, i) {
-                final it = vm.items[i];
+                final it = items[i];
                 return Card(
                   child: ListTile(
                     leading: it.imageUrl != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(6),
-                            child: Image.network(
-                              it.imageUrl!,
+                            child: CachedNetworkImage(
+                              imageUrl: it.imageUrl!,
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                              placeholder: (_, __) => const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                              errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
                         : const Icon(Icons.search),
                     title: Text(it.title),
                     subtitle: Text([
-                      if (it.location != null && it.location!.isNotEmpty) '📍 ${it.location}',
-                      if (it.category != null && it.category!.isNotEmpty) '🏷️ ${it.category}',
-                      '🕒 ${it.createdAt.toLocal()}',
+                      if (it.location != null && it.location!.isNotEmpty) it.location!,
+                      if (it.category != null && it.category!.isNotEmpty) it.category!,
+                      it.createdAt.toLocal().toString(),
                     ].where((e) => e.isNotEmpty).join(' · ')),
                     onTap: () {
                       Navigator.pushNamed(
@@ -164,6 +235,7 @@ class _FeedBodyState extends State<_FeedBody> {
           },
         ),
       ),
+
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
@@ -172,7 +244,7 @@ class _FeedBodyState extends State<_FeedBody> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => Navigator.pushNamed(context, AppRoutes.lostReport)
-                  .then((_) => context.read<FeedViewModel>().load()),
+                  .then((_) => FeedViewModel.instance.load()),
               child: const Text('Report a lost item'),
             ),
           ),

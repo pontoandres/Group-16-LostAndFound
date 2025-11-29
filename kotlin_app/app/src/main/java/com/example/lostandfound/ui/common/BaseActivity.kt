@@ -20,6 +20,7 @@ import com.example.lostandfound.ui.report.ReportLostItemActivity
 import com.example.lostandfound.ui.settings.SettingsActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
+import com.example.lostandfound.ui.favorites.FavoritesActivity
 
 /**
  * Base común:
@@ -31,7 +32,7 @@ import com.google.android.material.navigation.NavigationView
  *
  * Asegúrate de usar esos IDs en tus layouts donde aplique.
  */
-abstract class  BaseActivity : AppCompatActivity() {
+abstract class BaseActivity : AppCompatActivity() {
 
     protected lateinit var drawerLayout: DrawerLayout
     protected lateinit var navigationView: NavigationView
@@ -75,6 +76,7 @@ abstract class  BaseActivity : AppCompatActivity() {
                 R.id.nav_notifications -> goIfNot<NotificationsActivity>()
                 R.id.nav_recent -> goIfNot<RecentlyViewedActivity>()
                 R.id.nav_settings -> goIfNot<SettingsActivity>()
+                R.id.nav_favorites -> goIfNot<FavoritesActivity>()
                 else -> false
             }
             drawerLayout.closeDrawers()

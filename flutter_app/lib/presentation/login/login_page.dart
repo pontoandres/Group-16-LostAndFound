@@ -149,7 +149,7 @@ class _LoginFormState extends State<_LoginForm> {
                         if (success && context.mounted) {
                           await prefs.setString('user_email',
                               viewModel.emailController.text.trim());
-                          // ✅ PASO 4: guarda último login
+                          
                           await prefs.setString('last_logged_email',
                               viewModel.emailController.text.trim());
                           Navigator.pushReplacementNamed(context, '/feed');
