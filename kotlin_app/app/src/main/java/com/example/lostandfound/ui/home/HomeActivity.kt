@@ -111,7 +111,7 @@ class HomeActivity : BaseActivity() {
     private fun loadLostItems() {
         lifecycleScope.launch {
             try {
-                // Switch to IO dispatcher for network operations (Supabase calls)
+                // 1. Supabase en IO
                 val lostItems = withContext(Dispatchers.IO) {
                     SupabaseProvider.client.postgrest["lost_items"].select().decodeList<LostItem>()
                 }
@@ -119,34 +119,47 @@ class HomeActivity : BaseActivity() {
                     SupabaseProvider.client.postgrest["profiles"].select().decodeList<Profile>()
                 }
 
-                // Process data on Default dispatcher (CPU work for mapping)
+                // 2. CPU work en Default dispatcher (versión OPTIMIZADA)
                 val mergedItems = withContext(Dispatchers.Default) {
+                    // Creamos un mapa id -> perfil (O(n))
+                    val profilesById = profiles.associateBy { it.id }
+
+                    // Luego cada item hace un lookup O(1)
                     lostItems.map { item ->
-                        val user = profiles.find { it.id == item.userId }
+                        val user = profilesById[item.userId]
                         item.copy(legacyPostedBy = user?.name ?: "Unknown")
                     }
                 }
-                // Back on Main dispatcher for UI updates
+
+                // 3. UI en Main
                 adapter.submitList(mergedItems)
             } catch (e: Exception) {
                 val cached = com.example.lostandfound.data.ItemCache.loadAll(this@HomeActivity)
-                // Error handling on Main thread for UI updates
                 if (cached.isNotEmpty()) {
-
                     adapter.submitList(cached)
-
-                    Toast.makeText(applicationContext, "Loaded cached items (offline mode)", Toast.LENGTH_SHORT).show()
-
+                    Toast.makeText(
+                        applicationContext,
+                        "Loaded cached items (offline mode)",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 } else {
-                    Toast.makeText(applicationContext, "No cached items available", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        applicationContext,
+                        "No cached items available",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     android.util.Log.e("HomeActivity", "Error loading lost items", e)
-                    Toast.makeText(this@HomeActivity, "Error loading items: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        this@HomeActivity,
+                        "Error loading items: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                     e.printStackTrace()
                 }
-
             }
         }
     }
+
 
 
 }
