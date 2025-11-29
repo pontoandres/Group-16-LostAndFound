@@ -18,6 +18,7 @@ import '../presentation/statistics/reports_by_faculty_page.dart';
 import '../presentation/statistics/category_statistics_page.dart';
 import '../presentation/statistics/password_changes_by_faculty_page.dart';
 import '../presentation/statistics/reports_by_hour_page.dart';
+import '../presentation/statistics/long_unclaimed_items_page.dart';
 
 import '../viewmodels/feed/feed_viewmodel.dart'; 
 
@@ -38,7 +39,7 @@ class AppRoutes {
   static const String config = '/config';
   static const String resetPassword = '/reset_password';
   static const String myReports = '/my_reports';
-
+  static const longUnclaimedItems = '/long-unclaimed-items'; 
   static const String reportsByFaculty = '/reports_by_faculty';
   static const String categoryStats = '/category_stats';
   static const String passwordChangesByFaculty =
@@ -65,6 +66,7 @@ class AppRoutes {
       passwordChangesByFaculty: (_) =>
           const PasswordChangesByFacultyPage(),
       reportsByHour: (_) => const ReportsByHourPage(),
+      AppRoutes.longUnclaimedItems: (_) => const LongUnclaimedItemsPage()
     };
   }
 
