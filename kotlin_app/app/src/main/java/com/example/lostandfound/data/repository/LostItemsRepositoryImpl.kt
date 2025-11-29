@@ -5,9 +5,9 @@ import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import com.example.lostandfound.SupabaseProvider
-import com.example.lostandfound.data.local.DbProvider
-import com.example.lostandfound.data.local.LostItemDao
-import com.example.lostandfound.data.local.LostItemEntity
+import com.example.lostandfound.data.local.db.dao.LostItemDao
+import com.example.lostandfound.data.local.db.DbProvider
+import com.example.lostandfound.data.local.db.entities.LostItemEntity
 import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.workers.enqueueLostItemSync
 import io.github.jan.supabase.auth.auth

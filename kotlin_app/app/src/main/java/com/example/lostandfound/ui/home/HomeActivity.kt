@@ -92,6 +92,10 @@ class HomeActivity : BaseActivity() {
                         enqueueBqRefreshLast30Days(applicationContext)
                         enqueueBqRefreshTopFavoritedCategories(applicationContext)
                     }
+                    loadLostItems()
+
+                    binding.txtOfflineBanner.visibility = View.GONE
+                    binding.rvItems.visibility = View.VISIBLE
                 }
             }
         }

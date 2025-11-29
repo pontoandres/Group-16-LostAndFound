@@ -1,4 +1,4 @@
-package com.example.lostandfound.data.local
+package com.example.lostandfound.data.local.db.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

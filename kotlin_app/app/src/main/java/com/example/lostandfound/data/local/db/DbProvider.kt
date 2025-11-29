@@ -1,7 +1,8 @@
-package com.example.lostandfound.data.local
+package com.example.lostandfound.data.local.db
 
 import android.content.Context
 import androidx.room.Room
+import com.example.lostandfound.data.local.db.AppDatabase
 
 object DbProvider {
     @Volatile private var instance: AppDatabase? = null
