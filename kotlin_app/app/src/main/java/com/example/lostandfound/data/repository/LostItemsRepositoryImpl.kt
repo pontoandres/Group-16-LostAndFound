@@ -81,6 +81,7 @@ class LostItemsRepositoryImpl(
                 isClaimed = false,
                 syncedAt = null, // Mark as pending sync
                 updatedAt = System.currentTimeMillis()
+                // isFavorite y campos de favorito usan sus defaults (false/null/null)
             )
 
             // Save to local database
@@ -132,7 +133,9 @@ class LostItemsRepositoryImpl(
         createdAt = createdAt,
         isClaimed = isClaimed,
         claimedById = claimedById,
-        claimedAt = claimedAt
+        claimedAt = claimedAt,
+        // legacy fields se van con defaults
+        isFavorite = isFavorite
     )
 
     // La dejamos lista por si luego volvemos a habilitar subir imagen
@@ -140,48 +143,51 @@ class LostItemsRepositoryImpl(
         Log.d(TAG, "Uploading image to bucket: $BUCKET_NAME")
         val bucket = supabase.storage.from(BUCKET_NAME)
         val path = "lost/$userId/${System.currentTimeMillis()}.jpg"
-        
+
         Log.d(TAG, "Upload path: $path")
         bucket.upload(path, imageFile.readBytes()) {
             contentType = ContentType.Image.JPEG
             upsert = true
         }
-        
+
         val publicUrl = bucket.publicUrl(path)
         Log.d(TAG, "Upload successful, public URL: $publicUrl")
         publicUrl
     }
-    
+
     // ===== TECHNIQUE #4: RXJAVA / RXKOTLIN =====
     // Uses multithreading: Explicitly controls threading with subscribeOn and observeOn
     // subscribeOn(Schedulers.io()) - work happens on I/O thread pool
     // observeOn(AndroidSchedulers.mainThread()) - results delivered to Main thread
-    
+
     fun uploadImageWithRxJava(imageFile: File, userId: String): Single<String> {
         Log.d(TAG, "Uploading image using RxJava pattern")
-        
+
         return Single.fromCallable {
             // This block runs on the I/O thread pool (specified by subscribeOn)
-            Log.d(TAG, "RxJava: Uploading image to bucket: $BUCKET_NAME on thread: ${Thread.currentThread().name}")
-            
+            Log.d(
+                TAG,
+                "RxJava: Uploading image to bucket: $BUCKET_NAME on thread: ${Thread.currentThread().name}"
+            )
+
             // Use runBlocking to call suspend function from RxJava context
             runBlocking {
                 val bucket = supabase.storage.from(BUCKET_NAME)
                 val path = "lost/$userId/${System.currentTimeMillis()}.jpg"
-                
+
                 Log.d(TAG, "RxJava: Upload path: $path")
                 bucket.upload(path, imageFile.readBytes()) {
                     contentType = ContentType.Image.JPEG
                     upsert = true
                 }
-                
+
                 val publicUrl = bucket.publicUrl(path)
                 Log.d(TAG, "RxJava: Upload successful, public URL: $publicUrl")
                 publicUrl
             }
         }
-        .subscribeOn(Schedulers.io()) // 1. Do the work on the I/O thread pool
-        .observeOn(AndroidSchedulers.mainThread()) // 2. Deliver result to the Main thread
+            .subscribeOn(Schedulers.io()) // 1. Do the work on the I/O thread pool
+            .observeOn(AndroidSchedulers.mainThread()) // 2. Deliver result to the Main thread
     }
 
     override suspend fun getLostItems(): Result<List<LostItem>> = withContext(Dispatchers.IO) {
@@ -225,8 +231,10 @@ class LostItemsRepositoryImpl(
         val items = supabase.postgrest["lost_items"].select().decodeList<LostItem>()
         Log.d(TAG, "Retrieved ${items.size} items from remote")
 
-
         val entities = items.map { item ->
+            // Conservamos el estado de favorito si ya existe en la DB local
+            val localExisting = item.id?.let { dao.getById(it) }
+
             LostItemEntity(
                 id = item.id ?: UUID.randomUUID().toString(),
                 userId = item.userId,
@@ -241,7 +249,10 @@ class LostItemsRepositoryImpl(
                 claimedById = item.claimedById,
                 claimedAt = item.claimedAt,
                 syncedAt = System.currentTimeMillis(), // Mark as synced
-                updatedAt = System.currentTimeMillis()
+                updatedAt = System.currentTimeMillis(),
+                isFavorite = localExisting?.isFavorite ?: false,
+                favoriteUpdatedAt = localExisting?.favoriteUpdatedAt,
+                favoriteSyncedAt = localExisting?.favoriteSyncedAt
             )
         }
 
@@ -285,4 +296,91 @@ class LostItemsRepositoryImpl(
             syncedCount
         }
     }
+
+    // =============== NUEVO: helpers para favoritos =================
+
+    /**
+     * Obtiene un ítem específico por ID desde la base local (cache).
+     * Usado por ItemDetailActivity para saber si está en favoritos.
+     */
+    suspend fun getItemById(id: String): Result<LostItem> = withContext(Dispatchers.IO) {
+        runCatching {
+            val entity = dao.getById(id) ?: error("Item not found in local DB")
+            entity.toLostItem()
+        }
+    }
+
+    /**
+     * Marca / desmarca un ítem como favorito (offline-first).
+     * - Actualiza Room.
+     * - (Opcionalmente) podrías encolar un worker de sync con Supabase.
+     */
+
+    suspend fun toggleFavorite(itemId: String, markFavorite: Boolean): Result<LostItem> =
+        withContext(Dispatchers.IO) {
+            runCatching {
+                // 1. Cargar el item de Room
+                val entity = dao.getById(itemId) ?: error("Item not found locally")
+
+                // 2. Actualizar el flag de favorito en la base local
+                val updatedEntity = entity.copy(
+                    isFavorite = markFavorite,
+                    updatedAt = System.currentTimeMillis()
+                )
+                dao.upsert(updatedEntity)
+
+                // 3. Si se marcó como favorito, registrar el evento en Supabase (tabla favorites)
+                if (markFavorite) {
+                    val user = supabase.auth.currentUserOrNull()
+                    if (user != null) {
+                        try {
+                            val payload = mapOf(
+                                "user_id" to user.id,
+                                "item_id" to itemId
+                            )
+                            // Insertamos un "evento" de favorito; si ya existía, Supabase aplica unique constraint
+                            supabase.postgrest["favorites"].insert(payload)
+                            Log.d(TAG, "Favorite event synced to Supabase for item=$itemId user=${user.id}")
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to sync favorite to Supabase: ${e.message}")
+                            // No re-lanzamos: el favorito local sigue funcionando
+                        }
+                    } else {
+                        Log.w(TAG, "toggleFavorite: no current user session, skipping Supabase sync")
+                    }
+                }
+
+                // 4. Devolvemos el modelo de dominio para actualizar UI
+                updatedEntity.toLostItem()
+            }
+        }
+
+    /**
+     * (Opcional) Flow de favoritos para una pantalla 'Mis favoritos'.
+     */
+    fun observeFavoriteItems(): Flow<List<LostItem>> =
+        dao.observeFavorites().map { list -> list.map { it.toLostItem() } }
+
+    // Guarda/actualiza un item en el cache local de Room a partir del modelo de dominio
+    suspend fun upsertLocalFromModel(item: LostItem) = withContext(Dispatchers.IO) {
+        val entity = LostItemEntity(
+            id = item.id ?: UUID.randomUUID().toString(),
+            userId = item.userId,
+            title = item.title,
+            description = item.description,
+            location = item.location,
+            category = item.category,
+            imageUrl = item.imageUrl,
+            lostAt = item.lostAt,
+            createdAt = item.createdAt,
+            isClaimed = item.isClaimed,
+            claimedById = item.claimedById,
+            claimedAt = item.claimedAt,
+            isFavorite = item.isFavorite,
+            syncedAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
+        dao.upsert(entity)
+    }
+
 }
