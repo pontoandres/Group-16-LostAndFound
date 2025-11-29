@@ -4,6 +4,7 @@ import '../widgets/debug_nav.dart';
 import '../../theme/app_theme.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../../services/recent_items_service.dart';
 
 class ItemDescriptionScreen extends StatelessWidget {
   final FeedItem item;
@@ -24,7 +25,16 @@ class ItemDescriptionScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     // Pre-formateamos el texto de la fecha una sola vez
     final createdAtText = 'Posted on: ${item.createdAt.toLocal()}';
-
+     Future.microtask(() {
+      RecentItemsService().addToRecent({
+        'id': item.id,
+        'title': item.title,
+        'category': item.category,
+        'location': item.location,
+        'image_url': item.imageUrl,
+        'created_at': item.createdAt.toIso8601String(),
+      });
+    });
     return Scaffold(
       appBar: const TopBar(
         title: 'Goatfound',

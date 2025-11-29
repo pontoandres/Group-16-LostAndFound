@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../recent/recent_items_screen.dart'; // 👈 Pantalla de recientes
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
@@ -77,6 +78,20 @@ class _FeedBodyState extends State<_FeedBody> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Recently viewed items',
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RecentItemsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
 
       drawer: Drawer(
@@ -114,7 +129,6 @@ class _FeedBodyState extends State<_FeedBody> {
               },
             ),
 
-            /////
             ListTile(
               leading: const Icon(Icons.access_time),
               title: const Text('Reports by Hour'),
@@ -162,7 +176,8 @@ class _FeedBodyState extends State<_FeedBody> {
                                 height: 24,
                                 child: CircularProgressIndicator(strokeWidth: 2),
                               ),
-                              errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+                              errorWidget: (_, __, ___) =>
+                                  const Icon(Icons.broken_image),
                             ),
                           )
                         : const Icon(Icons.search),
