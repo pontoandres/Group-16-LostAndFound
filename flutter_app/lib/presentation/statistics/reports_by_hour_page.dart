@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ReportsByHourPage extends StatefulWidget {
   const ReportsByHourPage({super.key});
@@ -10,10 +13,27 @@ class ReportsByHourPage extends StatefulWidget {
 
 class _ReportsByHourPageState extends State<ReportsByHourPage> {
   final supabase = Supabase.instance.client;
+  static const _cacheKey = 'reports_by_hour_cache';
 
   Future<List<Map<String, dynamic>>> _loadData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final connectivity = await Connectivity().checkConnectivity();
+
+    // Si no hay conexión, tratar de leer del caché
+    if (connectivity == ConnectivityResult.none) {
+      final cached = prefs.getString(_cacheKey);
+      if (cached != null) {
+        return List<Map<String, dynamic>>.from(json.decode(cached));
+      } else {
+        throw Exception('No internet and no cached data');
+      }
+    }
+
+    // Si hay conexión, llamar al RPC y guardar en caché
     final data = await supabase.rpc('get_reports_by_hour');
-    return List<Map<String, dynamic>>.from(data);
+    final list = List<Map<String, dynamic>>.from(data);
+    await prefs.setString(_cacheKey, json.encode(list));
+    return list;
   }
 
   @override
