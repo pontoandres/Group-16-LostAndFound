@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/brand_bg"
+    android:padding="12dp">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/brand_bg"
+        android:theme="@style/ThemeOverlay.Material3.ActionBar"
+        app:title="My favorites"
+        app:titleCentered="false"
+        app:titleTextColor="@android:color/black"
+        app:navigationIcon="@drawable/ic_arrow_back" />
+
+    <TextView
+        android:id="@+id/txtFavoritesHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Items you marked as favorite"
+        android:textColor="@android:color/black"
+        android:textSize="14sp"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFavorites"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp" />
+
+    <TextView
+        android:id="@+id/txtEmptyState"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="You haven't added any favorite items yet."
+        android:textColor="@android:color/darker_gray"
+        android:gravity="center"
+        android:padding="16dp"
+        android:visibility="gone" />
+
+</LinearLayout>
