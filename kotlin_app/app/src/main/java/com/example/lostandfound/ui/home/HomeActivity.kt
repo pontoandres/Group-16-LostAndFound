@@ -17,6 +17,7 @@ import com.example.lostandfound.model.Profile
 import com.example.lostandfound.ui.common.BaseActivity
 import com.example.lostandfound.utils.ConnectivityReceiver
 import com.example.lostandfound.workers.enqueueBqRefreshLast30Days
+import com.example.lostandfound.workers.enqueueBqRefreshTopFavoritedCategories
 import com.jakewharton.rxbinding4.widget.textChanges
 import io.github.jan.supabase.postgrest.postgrest
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
@@ -74,6 +75,7 @@ class HomeActivity : BaseActivity() {
 
         // 1) Encolar la BQ (background) al abrir Home
         enqueueBqRefreshLast30Days(applicationContext)
+        enqueueBqRefreshTopFavoritedCategories(applicationContext)
 
         // 2) Re-encolar cuando vuelva la conectividad (Callbacks → Flow)
         lifecycleScope.launch {
@@ -81,6 +83,7 @@ class HomeActivity : BaseActivity() {
                 ConnectivityMonitor.observe(applicationContext).collectLatest { state ->
                     if (state == ConnectionState.Available) {
                         enqueueBqRefreshLast30Days(applicationContext)
+                        enqueueBqRefreshTopFavoritedCategories(applicationContext)
                     }
                 }
             }

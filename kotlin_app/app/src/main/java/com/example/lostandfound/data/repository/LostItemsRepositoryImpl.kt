@@ -315,12 +315,43 @@ class LostItemsRepositoryImpl(
      * - Actualiza Room.
      * - (Opcionalmente) podrías encolar un worker de sync con Supabase.
      */
-    suspend fun toggleFavorite(itemId: String, isFavorite: Boolean): Result<Unit> =
+
+    suspend fun toggleFavorite(itemId: String, markFavorite: Boolean): Result<LostItem> =
         withContext(Dispatchers.IO) {
             runCatching {
-                val now = System.currentTimeMillis()
-                dao.updateFavorite(itemId, isFavorite, now)
-                // TODO: enqueueFavoriteSync(context, itemId) si más adelante sincronizas favoritos al backend
+                // 1. Cargar el item de Room
+                val entity = dao.getById(itemId) ?: error("Item not found locally")
+
+                // 2. Actualizar el flag de favorito en la base local
+                val updatedEntity = entity.copy(
+                    isFavorite = markFavorite,
+                    updatedAt = System.currentTimeMillis()
+                )
+                dao.upsert(updatedEntity)
+
+                // 3. Si se marcó como favorito, registrar el evento en Supabase (tabla favorites)
+                if (markFavorite) {
+                    val user = supabase.auth.currentUserOrNull()
+                    if (user != null) {
+                        try {
+                            val payload = mapOf(
+                                "user_id" to user.id,
+                                "item_id" to itemId
+                            )
+                            // Insertamos un "evento" de favorito; si ya existía, Supabase aplica unique constraint
+                            supabase.postgrest["favorites"].insert(payload)
+                            Log.d(TAG, "Favorite event synced to Supabase for item=$itemId user=${user.id}")
+                        } catch (e: Exception) {
+                            Log.w(TAG, "Failed to sync favorite to Supabase: ${e.message}")
+                            // No re-lanzamos: el favorito local sigue funcionando
+                        }
+                    } else {
+                        Log.w(TAG, "toggleFavorite: no current user session, skipping Supabase sync")
+                    }
+                }
+
+                // 4. Devolvemos el modelo de dominio para actualizar UI
+                updatedEntity.toLostItem()
             }
         }
 
