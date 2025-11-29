@@ -2,15 +2,15 @@ package com.example.lostandfound.ui.detail
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.example.lostandfound.R
-import com.example.lostandfound.ui.claimobject.ClaimObjectActivity
 import coil.load
-import android.widget.Toast
+import com.example.lostandfound.R
+import com.example.lostandfound.data.ItemCache
 import com.example.lostandfound.databinding.ActivityItemDetailBinding
 import com.example.lostandfound.model.LostItem
-import com.example.lostandfound.data.ItemCache
+import com.example.lostandfound.ui.claimobject.ClaimObjectActivity
 import kotlinx.coroutines.launch
 
 /**
@@ -25,11 +25,20 @@ import kotlinx.coroutines.launch
  */
 class ItemDetailActivity : AppCompatActivity() {
 
+    // Repo para manejar favoritos y datos locales/remotos
+    private val repository by lazy {
+        com.example.lostandfound.data.repository.LostItemsRepositoryImpl(this)
+    }
+
     private lateinit var binding: ActivityItemDetailBinding
     
     // Pre-computed strings to avoid repeated concatenation
     private lateinit var postedByText: String
     private lateinit var claimIntent: Intent
+
+    // Estado actual del favorito en esta pantalla
+    private var currentFavorite: Boolean = false
+    private var currentItemId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +54,8 @@ class ItemDetailActivity : AppCompatActivity() {
         val imageUrl = extras.getString("imageUrl")
         val createdAt = extras.getString("createdAt")
         val itemId = extras.getString("itemId")
+
+        currentItemId = itemId
 
         // Pre-compute string concatenation once (optimization: avoid repeated string creation)
         postedByText = "Posted by $postedBy"
@@ -71,6 +82,46 @@ class ItemDetailActivity : AppCompatActivity() {
             onBackPressedDispatcher.onBackPressed() 
         }
 
+        // Inicializar estado de favorito desde Room (si existe)
+        if (itemId != null) {
+            lifecycleScope.launch {
+                // TODO: Implementar getItemById en LostItemsRepositoryImpl
+                val result = repository.getItemById(itemId)
+                val item = result.getOrNull()
+                currentFavorite = item?.isFavorite ?: false
+                updateFavoriteIcon(currentFavorite)
+            }
+        } else {
+            updateFavoriteIcon(false)
+        }
+
+        // Click en el corazón para toggle favorito
+        binding.btnFavorite.setOnClickListener {
+            val id = currentItemId ?: return@setOnClickListener
+            val newState = !currentFavorite
+
+            lifecycleScope.launch {
+                // TODO: Implementar toggleFavorite en LostItemsRepositoryImpl
+                val result = repository.toggleFavorite(id, newState)
+
+                result.onSuccess {
+                    currentFavorite = newState
+                    updateFavoriteIcon(newState)
+                    Toast.makeText(
+                        this@ItemDetailActivity,
+                        if (newState) "Added to favorites" else "Removed from favorites",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }.onFailure { e ->
+                    Toast.makeText(
+                        this@ItemDetailActivity,
+                        "Error updating favorite: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
         // Setup claim button with pre-built Intent
         binding.btnClaim.setOnClickListener {
             startActivity(claimIntent)  // ✅ Reuses pre-built Intent
@@ -84,23 +135,26 @@ class ItemDetailActivity : AppCompatActivity() {
 
         binding.btnVerify.setOnClickListener {
             val code = binding.edtCode.text?.toString().orEmpty()
-            Toast.makeText(this, "Feature in progress… Code: $code", Toast.LENGTH_SHORT).show()
+            // TODO: validar código (prototipo: solo mostrar toast)
+            Toast.makeText(
+                this,
+                "Feature in progress… Code: $code",
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
-        // Use lifecycleScope instead of MainScope (optimization: better lifecycle management)
-        // Only launch coroutine if itemId is not null
-        if (itemId != null) {
-            lifecycleScope.launch {
-                val item = LostItem(
-                    id = itemId ?: "",
-                    userId = postedBy,
-                    title = name,
-                    description = desc,
-                    imageUrl = imageUrl,
-                    createdAt = createdAt ?: java.time.Instant.now().toString()
-                )
-                ItemCache.saveItem(this@ItemDetailActivity, item)
-            }
+        // Guardar en cache el último item visto y upsert en Room
+        lifecycleScope.launch {
+            val item = LostItem(
+                id = itemId,
+                userId = postedBy,
+                title = name,
+                description = desc,
+                imageUrl = imageUrl,
+                createdAt = createdAt ?: java.time.Instant.now().toString()
+            )
+            ItemCache.saveItem(this@ItemDetailActivity, item)
+            repository.upsertLocalFromModel(item)
         }
     }
 
@@ -119,5 +173,17 @@ class ItemDetailActivity : AppCompatActivity() {
         } else {
             img.setImageResource(R.drawable.ic_placeholder)
         }
+    }
+
+    /**
+     * Actualiza el ícono del botón de favorito según el estado actual
+     */
+    private fun updateFavoriteIcon(isFavorite: Boolean) {
+        val iconRes = if (isFavorite) {
+            R.drawable.ic_favorite_filled
+        } else {
+            R.drawable.ic_favorite_border
+        }
+        binding.btnFavorite.setImageResource(iconRes)
     }
 }
