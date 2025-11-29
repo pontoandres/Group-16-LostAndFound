@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../viewmodels/lost_report/lost_report_viewmodel.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+// Los siguientes imports ya no se usan, pero puedes dejarlos o borrarlos
+// import 'package:shared_preferences/shared_preferences.dart';
+// import 'dart:convert';
 
 class LostReportScreen extends StatelessWidget {
   const LostReportScreen({super.key});
@@ -36,14 +37,30 @@ class _LostReportBody extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            TextField(
-              controller: vm.titleCtrl,
-              decoration: const InputDecoration(
-                labelText: 'Title',
-                filled: true,
-              ),
+            // ---------------- TÍTULO + BOTÓN SMART TITLE ------------------
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: vm.titleCtrl,
+                    decoration: const InputDecoration(
+                      labelText: 'Title',
+                      filled: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  tooltip: 'Suggest title',
+                  onPressed:
+                      vm.isLoading ? null : () => vm.suggestSmartTitle(),
+                  icon: const Icon(Icons.auto_fix_high),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
+
+            // ---------------- DESCRIPCIÓN + CONTADOR ----------------------
             TextField(
               controller: vm.descriptionCtrl,
               maxLines: 3,
@@ -52,7 +69,27 @@ class _LostReportBody extends StatelessWidget {
                 filled: true,
               ),
             ),
+            const SizedBox(height: 4),
+            Align(
+              alignment: Alignment.centerRight,
+              child: StreamBuilder<int>(
+                stream: vm.descRemainingStream,
+                initialData:
+                    300 - vm.descriptionCtrl.text.characters.length,
+                builder: (context, snapshot) {
+                  final remaining = snapshot.data ?? 0;
+                  return Text(
+                    '$remaining characters remaining',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
+            ),
             const SizedBox(height: 12),
+
             TextField(
               controller: vm.categoryCtrl,
               decoration: const InputDecoration(
@@ -62,6 +99,7 @@ class _LostReportBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+
             TextField(
               controller: vm.locationCtrl,
               decoration: const InputDecoration(
@@ -70,11 +108,14 @@ class _LostReportBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
+
             Row(
               children: [
                 Expanded(
                   child: Text(
-                    vm.lostAt != null ? vm.lostAt!.toLocal().toString() : '',
+                    vm.lostAt != null
+                        ? vm.lostAt!.toLocal().toString()
+                        : '',
                   ),
                 ),
                 TextButton(
@@ -89,7 +130,8 @@ class _LostReportBody extends StatelessWidget {
                     if (picked != null) {
                       final time = await showTimePicker(
                         context: context,
-                        initialTime: TimeOfDay.fromDateTime(vm.lostAt ?? now),
+                        initialTime:
+                            TimeOfDay.fromDateTime(vm.lostAt ?? now),
                       );
                       final dt = DateTime(
                         picked.year,
@@ -106,13 +148,15 @@ class _LostReportBody extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
+
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: vm.isLoading
                         ? null
-                        : () => vm.pickImage(source: ImageSource.gallery),
+                        : () =>
+                            vm.pickImage(source: ImageSource.gallery),
                     icon: const Icon(Icons.photo),
                     label: const Text('Gallery'),
                   ),
@@ -122,7 +166,8 @@ class _LostReportBody extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: vm.isLoading
                         ? null
-                        : () => vm.pickImage(source: ImageSource.camera),
+                        : () =>
+                            vm.pickImage(source: ImageSource.camera),
                     icon: const Icon(Icons.camera_alt),
                     label: const Text('Camera'),
                   ),
@@ -130,12 +175,18 @@ class _LostReportBody extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
+
             if (vm.imageBytes != null)
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.memory(vm.imageBytes!, height: 160, fit: BoxFit.cover),
+                child: Image.memory(
+                  vm.imageBytes!,
+                  height: 160,
+                  fit: BoxFit.cover,
+                ),
               ),
             const SizedBox(height: 20),
+
             SizedBox(
               height: 52,
               width: double.infinity,
@@ -146,7 +197,9 @@ class _LostReportBody extends StatelessWidget {
                         final ok = await vm.submit(context);
                         if (ok && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Item reported')),
+                            const SnackBar(
+                              content: Text('Item reported'),
+                            ),
                           );
                           Navigator.pop(context, true);
                         } else if (vm.error != null && context.mounted) {
@@ -156,7 +209,9 @@ class _LostReportBody extends StatelessWidget {
                         }
                       },
                 child: vm.isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
                     : const Text('Submit'),
               ),
             ),
@@ -166,3 +221,5 @@ class _LostReportBody extends StatelessWidget {
     );
   }
 }
+
+

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../routes/app_routes.dart';
+import '../recent/recent_items_screen.dart'; 
 
 class FeedPage extends StatelessWidget {
   const FeedPage({super.key});
@@ -50,7 +51,7 @@ class _FeedBodyState extends State<_FeedBody> {
               child: const Text('OK'),
             ),
           ],
-          backgroundColor: const Color.fromARGB(255, 201, 165, 59),
+          backgroundColor: const Color.fromARGB(255, 236, 205, 112),
         ),
       );
 
@@ -76,7 +77,22 @@ class _FeedBodyState extends State<_FeedBody> {
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
+        actions: [
+          IconButton(
+            tooltip: 'Recently viewed items',
+            icon: const Icon(Icons.history, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const RecentItemsScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
+
       drawer: Drawer(
         child: ListView(
           children: [
@@ -84,6 +100,34 @@ class _FeedBodyState extends State<_FeedBody> {
               decoration: BoxDecoration(color: Colors.blueGrey),
               child: Text('GoatFound Menu', style: TextStyle(color: Colors.white)),
             ),
+
+            ListTile(
+              leading: const Icon(Icons.list_alt),
+              title: const Text('My Reports'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.myReports);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.timer_outlined),
+              title: const Text('Longest Unclaimed Items'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.longUnclaimedItems);
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.calendar_view_week),
+              title: const Text('My Weekly Loss Pattern'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, AppRoutes.myLossWeekPattern);
+              },
+            ),
+
             ListTile(
               leading: const Icon(Icons.bar_chart),
               title: const Text('Statistics'),
@@ -92,6 +136,7 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByFaculty);
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.category_outlined),
               title: const Text('Category Statistics'),
@@ -100,6 +145,7 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.categoryStats);
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.change_circle),
               title: const Text('Password Changes (by Faculty)'),
@@ -108,6 +154,7 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.passwordChangesByFaculty);
               },
             ),
+
             ListTile(
               leading: const Icon(Icons.access_time),
               title: const Text('Reports by Hour'),
@@ -116,8 +163,9 @@ class _FeedBodyState extends State<_FeedBody> {
                 Navigator.pushNamed(context, AppRoutes.reportsByHour);
               },
             ),
+
             ListTile(
-              leading: const Icon(Icons.favorite),
+              leading: const Icon(Icons.favorite, color: Colors.redAccent),
               title: const Text('Liked Items'),
               onTap: () {
                 Navigator.pop(context);
@@ -127,6 +175,7 @@ class _FeedBodyState extends State<_FeedBody> {
           ],
         ),
       ),
+
       body: RefreshIndicator(
         onRefresh: () => FeedViewModel.instance.load(),
         child: Builder(
@@ -157,8 +206,11 @@ class _FeedBodyState extends State<_FeedBody> {
                               width: 56,
                               height: 56,
                               fit: BoxFit.cover,
-                              placeholder: (_, __) =>
-                                  const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2)),
+                              placeholder: (_, __) => const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              ),
                               errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
                             ),
                           )
@@ -170,7 +222,11 @@ class _FeedBodyState extends State<_FeedBody> {
                       it.createdAt.toLocal().toString(),
                     ].where((e) => e.isNotEmpty).join(' · ')),
                     onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.matchDetail, arguments: it);
+                      Navigator.pushNamed(
+                        context,
+                        AppRoutes.matchDetail,
+                        arguments: it,
+                      );
                     },
                   ),
                 );
@@ -179,6 +235,7 @@ class _FeedBodyState extends State<_FeedBody> {
           },
         ),
       ),
+
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(12),
