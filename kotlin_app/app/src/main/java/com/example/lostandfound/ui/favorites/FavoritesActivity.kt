@@ -3,7 +3,6 @@ package com.example.lostandfound.ui.favorites
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -13,9 +12,10 @@ import com.example.lostandfound.model.LostItem
 import com.example.lostandfound.ui.detail.ItemDetailActivity
 import com.example.lostandfound.ui.home.LostItemAdapter
 import com.example.lostandfound.data.repository.LostItemsRepositoryImpl
+import com.example.lostandfound.ui.common.BaseActivity
 import kotlinx.coroutines.launch
 
-class FavoritesActivity : AppCompatActivity() {
+class FavoritesActivity : BaseActivity() {
 
     private lateinit var binding: ActivityFavoritesBinding
     private lateinit var adapter: LostItemAdapter
@@ -26,10 +26,9 @@ class FavoritesActivity : AppCompatActivity() {
         binding = ActivityFavoritesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Toolbar back
-        binding.topAppBar.setNavigationOnClickListener {
-            onBackPressedDispatcher.onBackPressed()
-        }
+        // 🔹 Conecta toolbar + drawer como en Home
+        setupToolbar()
+
 
         // Adapter reutilizando el mismo LostItemAdapter
         adapter = LostItemAdapter { item -> openDetail(item) }

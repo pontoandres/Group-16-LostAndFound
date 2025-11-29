@@ -142,6 +142,7 @@ class ItemDetailActivity : AppCompatActivity() {
                 createdAt = createdAt ?: java.time.Instant.now().toString()
             )
             ItemCache.saveItem(this@ItemDetailActivity, item)
+            repository.upsertLocalFromModel(item)
         }
     }
 

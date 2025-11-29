@@ -360,4 +360,27 @@ class LostItemsRepositoryImpl(
      */
     fun observeFavoriteItems(): Flow<List<LostItem>> =
         dao.observeFavorites().map { list -> list.map { it.toLostItem() } }
+
+    // Guarda/actualiza un item en el cache local de Room a partir del modelo de dominio
+    suspend fun upsertLocalFromModel(item: LostItem) = withContext(Dispatchers.IO) {
+        val entity = LostItemEntity(
+            id = item.id ?: UUID.randomUUID().toString(),
+            userId = item.userId,
+            title = item.title,
+            description = item.description,
+            location = item.location,
+            category = item.category,
+            imageUrl = item.imageUrl,
+            lostAt = item.lostAt,
+            createdAt = item.createdAt,
+            isClaimed = item.isClaimed,
+            claimedById = item.claimedById,
+            claimedAt = item.claimedAt,
+            isFavorite = item.isFavorite,
+            syncedAt = System.currentTimeMillis(),
+            updatedAt = System.currentTimeMillis()
+        )
+        dao.upsert(entity)
+    }
+
 }
