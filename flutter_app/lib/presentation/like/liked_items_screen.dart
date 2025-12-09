@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
-import 'package:cached_network_image/cached_network_image.dart'; // ← clave para offline
+import 'package:cached_network_image/cached_network_image.dart'; 
 
 import '../../viewmodels/feed/feed_viewmodel.dart';
 import '../../theme/app_theme.dart';
@@ -31,7 +31,7 @@ class _LikedItemsScreenState extends State<LikedItemsScreen> {
     final prefs = await SharedPreferences.getInstance();
     final likedIds = prefs.getStringList('liked_items') ?? [];
 
-    // Buscar datos si están en memoria del FeedViewModel
+    
     final allItems = Provider.of<FeedViewModel>(context, listen: false).items;
 
     if (allItems.isNotEmpty) {
@@ -40,7 +40,7 @@ class _LikedItemsScreenState extends State<LikedItemsScreen> {
         isLoading = false;
       });
     } else {
-      // Modo offline → Intentar leer desde caché
+      
       final cached = prefs.getString('feed_cache');
       if (cached != null) {
         try {
@@ -91,14 +91,14 @@ class _LikedItemsScreenState extends State<LikedItemsScreen> {
                                   height: 56,
                                   fit: BoxFit.cover,
 
-                                  // Mientras carga (o si es primera vez)
+                                 
                                   placeholder: (context, url) => const SizedBox(
                                       width: 30,
                                       height: 30,
                                       child: CircularProgressIndicator(strokeWidth: 2)
                                   ),
 
-                                  // Si falla o no hay conexión
+                                 
                                   errorWidget: (context, url, error) =>
                                       const Icon(Icons.broken_image),
                                 ),
