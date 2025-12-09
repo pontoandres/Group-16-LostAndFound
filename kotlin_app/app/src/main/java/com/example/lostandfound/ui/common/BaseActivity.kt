@@ -16,6 +16,7 @@ import com.example.lostandfound.ui.home.HomeActivity
 import com.example.lostandfound.ui.myreports.MyReportsActivity
 import com.example.lostandfound.ui.notifications.NotificationsActivity
 import com.example.lostandfound.ui.profile.ProfileActivity
+import com.example.lostandfound.ui.recent.RecentlyViewedActivity
 import com.example.lostandfound.ui.report.ReportLostItemActivity
 import com.example.lostandfound.ui.settings.SettingsActivity
 import com.google.android.material.appbar.MaterialToolbar
@@ -75,7 +76,7 @@ abstract class BaseActivity : AppCompatActivity() {
                 R.id.nav_report -> goIfNot<ReportLostItemActivity>(finishCurrent = false)
                 R.id.nav_profile -> goIfNot<ProfileActivity>()
                 R.id.nav_notifications -> goIfNot<NotificationsActivity>()
-                R.id.nav_history -> goIfNot<HistoryActivity>()
+                R.id.nav_recent -> goIfNot<RecentlyViewedActivity>()
                 R.id.nav_settings -> goIfNot<SettingsActivity>()
                 R.id.nav_favorites -> goIfNot<FavoritesActivity>()
                 else -> false

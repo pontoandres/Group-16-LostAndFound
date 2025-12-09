@@ -3,6 +3,7 @@ package com.example.lostandfound.ui.home
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -40,6 +41,12 @@ class HomeActivity : BaseActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.swipeRefresh.setOnRefreshListener {
+            loadLostItems()
+
+            binding.swipeRefresh.isRefreshing = false
+        }
+
         setupToolbar()
 
         adapter = LostItemAdapter { item ->
@@ -70,14 +77,14 @@ class HomeActivity : BaseActivity() {
                 .subscribe { seq -> adapter.filterBy(seq?.toString().orEmpty()) }
         )
 
-        // Cargar items como ya tenías
+        // Cargar items
         loadLostItems()
 
         // 1) Encolar la BQ (background) al abrir Home
         enqueueBqRefreshLast30Days(applicationContext)
         enqueueBqRefreshTopFavoritedCategories(applicationContext)
 
-        // 2) Re-encolar cuando vuelva la conectividad (Callbacks → Flow)
+        // 2) Re-encolar cuando vuelva la conectividad
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 ConnectivityMonitor.observe(applicationContext).collectLatest { state ->
@@ -85,6 +92,10 @@ class HomeActivity : BaseActivity() {
                         enqueueBqRefreshLast30Days(applicationContext)
                         enqueueBqRefreshTopFavoritedCategories(applicationContext)
                     }
+                    loadLostItems()
+
+                    binding.txtOfflineBanner.visibility = View.GONE
+                    binding.rvItems.visibility = View.VISIBLE
                 }
             }
         }

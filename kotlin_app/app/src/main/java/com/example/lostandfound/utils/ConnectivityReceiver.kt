@@ -20,13 +20,14 @@ class ConnectivityReceiver: BroadcastReceiver() {
             Log.d("ConnectivityDebug", "Device is online. Starting sync...")
 
             CoroutineScope(Dispatchers.IO).launch {
-                val dao = AppDatabase.getDatabase(context).pendingClaimDao()
+                val db = AppDatabase.getDatabase(context)
+                val dao = db.pendingClaimDao()
                 val pendingClaims = dao.getAllPending()
                 Log.d("ConnectivityDebug", "Found ${pendingClaims.size} pending claims.")
 
                 for (claim in pendingClaims) {
                     try {
-                        Log.d("ConnectivityDebug", "Uploading claim ${claim.localId}")
+                        Log.d("ConnectivityDebug", "Uploading claim ${claim.localId} w uploadType = ${claim.uploadType}")
                         SupabaseProvider.client.from("claims").insert(
                             ClaimUploadOff(
                                 userId = claim.userId,
@@ -34,7 +35,8 @@ class ConnectivityReceiver: BroadcastReceiver() {
                                 message = claim.message,
                                 code = claim.code,
                                 status = claim.status,
-                                createdAt = claim.createdAt
+                                createdAt = claim.createdAt,
+                                uploadType = claim.uploadType
                             )
                         )
 
@@ -44,7 +46,32 @@ class ConnectivityReceiver: BroadcastReceiver() {
                         Log.e("ConnectivityDebug", "Failed to upload claim ${claim.localId}", e)
                     }
                 }
-            }
+
+                val pendingNotifDao = db.pendingNotificationFetchDao()
+                val pendingRequests = pendingNotifDao.getAll()
+
+                Log.d("ConnectivityDebug", "Found ${pendingRequests.size} pending notification fetch requests.")
+
+                for (req in pendingRequests) {
+                    try {
+                        Log.d(
+                            "ConnectivityDebug",
+                            "Triggering delayed notification fetch for request ${req.id}"
+                        )
+
+                        pendingNotifDao.delete(req.id)
+
+
+                    } catch (e: Exception) {
+                        Log.e(
+                            "ConnectivityDebug",
+                            "Failed to process notification fetch request ${req.id}",
+                            e
+                        )
+                        }
+                    }
+                }
+
         } else {
             Log.d("ConnectivityDebug", "Device is offline.")
         }

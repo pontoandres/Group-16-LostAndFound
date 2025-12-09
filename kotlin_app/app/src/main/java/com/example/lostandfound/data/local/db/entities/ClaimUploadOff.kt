@@ -10,5 +10,6 @@ data class ClaimUploadOff(
     val message: String,
     @SerialName("verification_code") val code: String,
     val status: String = "PENDING",
-    @SerialName("created_at") val createdAt: String? = null
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("upload_type") val uploadType: String? = null
 )

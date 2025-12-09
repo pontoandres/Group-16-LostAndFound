@@ -1,7 +1,7 @@
 package com.example.lostandfound.data.repository
 
-import com.example.lostandfound.data.local.BqCategoryDao
-import com.example.lostandfound.data.local.BqCategoryEntity
+import com.example.lostandfound.data.local.db.dao.BqCategoryDao
+import com.example.lostandfound.data.local.db.entities.BqCategoryEntity
 import com.example.lostandfound.data.remote.SupabaseBqApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

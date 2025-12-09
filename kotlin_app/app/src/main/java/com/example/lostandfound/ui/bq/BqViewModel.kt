@@ -3,7 +3,7 @@ package com.example.lostandfound.ui.bq
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.lostandfound.data.local.BqCategoryEntity
+import com.example.lostandfound.data.local.db.entities.BqCategoryEntity
 import com.example.lostandfound.data.remote.ConnectivityMonitor
 import com.example.lostandfound.data.remote.ConnectionState
 import com.example.lostandfound.data.repository.BqRepository

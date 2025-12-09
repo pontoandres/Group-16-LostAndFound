@@ -3,7 +3,7 @@ package com.example.lostandfound.workers
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.lostandfound.data.local.DbProvider
+import com.example.lostandfound.data.local.db.DbProvider
 import com.example.lostandfound.data.remote.SupabaseBqApi
 import com.example.lostandfound.data.repository.BqRepository
 

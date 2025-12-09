@@ -4,7 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.example.lostandfound.data.local.DbProvider
+import com.example.lostandfound.data.local.db.DbProvider
 import com.example.lostandfound.data.repository.LostItemsRepositoryImpl
 
 /**

@@ -29,6 +29,8 @@ data class LostItem(
     val legacyName: String? = null,
     val legacyPostedBy: String? = null,
     val legacyImageRes: Int? = null,
+    val viewedAt: Long = System.currentTimeMillis(),
+
 
     // ===== NUEVO: campo de favoritos =====
     // Local-only al inicio; si luego creas una columna is_favorite en Supabase,
